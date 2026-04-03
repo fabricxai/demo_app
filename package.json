@@ -58,6 +58,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "sync:edge-function": "node scripts/sync-edge-function.mjs",
+    "deploy:edge-function": "npm run sync:edge-function && supabase functions deploy make-server-1f923fcd"
   }
 }

@@ -22,6 +22,7 @@ const defaultAgent: ModuleAgentConfig = {
 
 const byPathPrefix: { prefix: string; config: ModuleAgentConfig }[] = [
   { prefix: 'approve', config: { moduleTitle: 'Approvals', tagline: 'Route and clear exceptions fast', aiModuleKey: 'dashboard', accent: '#EAB308' } },
+  { prefix: 'contacts', config: { moduleTitle: 'Contacts', tagline: 'Customers, suppliers, and partners in one view', aiModuleKey: 'lead-management', accent: '#57ACAF' } },
   { prefix: 'notifications', config: { moduleTitle: 'Notifications', tagline: 'Stay on top of what matters', aiModuleKey: 'dashboard', accent: '#6F83A7' } },
   { prefix: 'profile', config: { moduleTitle: 'Profile', tagline: 'Your identity in the platform', aiModuleKey: 'settings', accent: '#6F83A7' } },
   { prefix: 'settings', config: { moduleTitle: 'Settings', tagline: 'Workspace and integrations', aiModuleKey: 'settings', accent: '#6F83A7' } },

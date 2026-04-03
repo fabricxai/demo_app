@@ -2,7 +2,7 @@ import { ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { getSession } from '../../utils/auth';
 import { getCurrentSession } from '../../utils/supabase/rbac';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface ProtectedRouteProps {
   children: ReactNode;

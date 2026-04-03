@@ -20,6 +20,7 @@ import { AgentModeDashboard } from './components/pages/AgentModeDashboard';
 // CRM Module
 import { LeadManagement } from './components/pages/LeadManagement';
 import { BuyerManagement } from './components/pages/BuyerManagement';
+import { Contacts } from './components/pages/Contacts';
 
 // Sales Module
 import { RFQQuotation } from './components/pages/RFQQuotation';
@@ -93,6 +94,10 @@ export const router = createBrowserRouter([
       {
         path: "approve",
         element: <ProtectedRoute roles={['admin', 'manager', 'finance']}><Approve /></ProtectedRoute>,
+      },
+      {
+        path: "contacts",
+        element: <ProtectedRoute><Contacts /></ProtectedRoute>,
       },
       {
         path: "notifications",
