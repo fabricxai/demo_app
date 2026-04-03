@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
+import { fabricRightDrawerClass } from './fabric/drawerChrome';
 import { useState } from 'react';
 import { 
   X, Edit2, Play, Pause, Send, Copy, Download, BarChart3, 
@@ -180,7 +181,7 @@ export function CampaignDetailDrawer({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-16 bottom-[72px] w-full max-w-[900px] bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 shadow-2xl z-50 flex flex-col overflow-hidden"
+            className={fabricRightDrawerClass('max-w-[900px]', 'overflow-hidden')}
           >
             {/* Check if creating new or viewing existing */}
             {isNewCampaign ? (

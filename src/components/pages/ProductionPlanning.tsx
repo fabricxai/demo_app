@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -10,6 +11,7 @@ import { StyleDetailDrawer } from '../StyleDetailDrawer';
 import { WorkflowStepper } from '../WorkflowStepper';
 import { MarbimAIButton } from '../MarbimAIButton';
 import { ModuleSetupBanner } from '../ModuleSetupBanner';
+import { ProductionPlanningSetup } from './ProductionPlanningSetup';
 import { useDatabase, MODULE_NAMES, canPerformAction } from '../../utils/supabase';
 import { 
   Factory, Clock, CheckCircle, AlertTriangle, FileText, TrendingUp,
@@ -518,11 +520,12 @@ interface ProductionPlanningProps {
 }
 
 export function ProductionPlanning({ initialSubPage = 'dashboard', onAskMarbim }: ProductionPlanningProps) {
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
   // Database hook
   const db = useDatabase();
   
   // UI State
-  const [currentView, setCurrentView] = useState<string>(initialSubPage);
+  const [currentView, setCurrentView] = useState<string>(routeSubpage);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerData, setDrawerData] = useState<DetailDrawerData | null>(null);
@@ -533,6 +536,8 @@ export function ProductionPlanning({ initialSubPage = 'dashboard', onAskMarbim }
   const [styleDrawerOpen, setStyleDrawerOpen] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState<any>(null);
   const [showModuleSetup, setShowModuleSetup] = useState(false);
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
+  const [isModuleSetup, setIsModuleSetup] = useState(false);
   
   // Database State
   const [orders, setOrders] = useState<any[]>([]);
@@ -555,10 +560,9 @@ export function ProductionPlanning({ initialSubPage = 'dashboard', onAskMarbim }
     { label: 'Avg. Efficiency', value: `${avgEfficiency}%`, icon: TrendingUp, color: '#57ACAF' },
   ];
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Load data from database on mount
   useEffect(() => {
@@ -593,7 +597,7 @@ export function ProductionPlanning({ initialSubPage = 'dashboard', onAskMarbim }
   async function seedInitialProductionData() {
     const initialOrders = masterPlanData.map(order => ({ ...order, type: 'order' }));
     const initialLines = lineAllocationData.map(line => ({ ...line, type: 'line' }));
-    const initialStyles = styleLibraryData.map(style => ({ ...style, type: 'style' }));
+    const initialStyles = styleAllocationData.map(style => ({ ...style, type: 'style' }));
     
     for (const order of initialOrders) {
       const id = `order-${order.id}-${Date.now()}`;
@@ -3530,60 +3534,82 @@ export function ProductionPlanning({ initialSubPage = 'dashboard', onAskMarbim }
 
   return (
     <>
-      <PageLayout
-        breadcrumbs={getBreadcrumbs()}
-        aiInsightsCount={6}
-      >
-        {renderContent()}
-      </PageLayout>
+      {showSetupWizard && (
+        <ProductionPlanningSetup
+          onComplete={() => {
+            setShowSetupWizard(false);
+            setIsModuleSetup(true);
+            toast.success('Production Planning module configured successfully!');
+          }}
+          onClose={() => setShowSetupWizard(false)}
+          onAskMarbim={onAskMarbim || (() => {})}
+        />
+      )}
 
-      {/* Detail Drawer */}
-      <DetailDrawer
-        isOpen={drawerOpen}
-        onClose={() => {
-          setDrawerOpen(false);
-          setDrawerData(null);
-        }}
-        data={drawerData}
-        module="Production Planning"
-        subPage={currentView}
-      />
+      {!showSetupWizard && (
+        <>
+          <PageLayout
+            breadcrumbs={getBreadcrumbs()}
+            aiInsightsCount={6}
+          >
+            {!isModuleSetup && currentView === 'dashboard' && (
+              <ModuleSetupBanner
+                moduleName="Production Planning"
+                onSetupClick={() => setShowSetupWizard(true)}
+              />
+            )}
+            {renderContent()}
+          </PageLayout>
 
-      {/* Production Order Detail Drawer */}
-      <ProductionOrderDetailDrawer
-        isOpen={productionOrderDrawerOpen}
-        onClose={() => {
-          setProductionOrderDrawerOpen(false);
-          setSelectedProductionOrder(null);
-        }}
-        orderData={selectedProductionOrder}
-        onOrderUpdated={handleOrderUpdated}
-        onAskMarbim={onAskMarbim}
-      />
+          {/* Detail Drawer */}
+          <DetailDrawer
+            isOpen={drawerOpen}
+            onClose={() => {
+              setDrawerOpen(false);
+              setDrawerData(null);
+            }}
+            data={drawerData}
+            module="Production Planning"
+            subPage={currentView}
+          />
 
-      {/* Line Detail Drawer */}
-      <LineDetailDrawer
-        isOpen={lineDrawerOpen}
-        onClose={() => {
-          setLineDrawerOpen(false);
-          setSelectedLine(null);
-        }}
-        lineData={selectedLine}
-        onLineUpdated={handleLineUpdated}
-        onAskMarbim={onAskMarbim}
-      />
+          {/* Production Order Detail Drawer */}
+          <ProductionOrderDetailDrawer
+            isOpen={productionOrderDrawerOpen}
+            onClose={() => {
+              setProductionOrderDrawerOpen(false);
+              setSelectedProductionOrder(null);
+            }}
+            orderData={selectedProductionOrder}
+            onOrderUpdated={handleOrderUpdated}
+            onAskMarbim={onAskMarbim}
+          />
 
-      {/* Style Detail Drawer */}
-      <StyleDetailDrawer
-        isOpen={styleDrawerOpen}
-        onClose={() => {
-          setStyleDrawerOpen(false);
-          setSelectedStyle(null);
-        }}
-        styleData={selectedStyle}
-        onStyleUpdated={handleStyleUpdated}
-        onAskMarbim={onAskMarbim}
-      />
+          {/* Line Detail Drawer */}
+          <LineDetailDrawer
+            isOpen={lineDrawerOpen}
+            onClose={() => {
+              setLineDrawerOpen(false);
+              setSelectedLine(null);
+            }}
+            lineData={selectedLine}
+            onLineUpdated={handleLineUpdated}
+            onAskMarbim={onAskMarbim}
+          />
+
+          {/* Style Detail Drawer */}
+          <StyleDetailDrawer
+            isOpen={styleDrawerOpen}
+            onClose={() => {
+              setStyleDrawerOpen(false);
+              setSelectedStyle(null);
+            }}
+            styleData={selectedStyle}
+            onStyleUpdated={handleStyleUpdated}
+            onAskMarbim={onAskMarbim}
+          />
+        </>
+      )}
     </>
   );
 }

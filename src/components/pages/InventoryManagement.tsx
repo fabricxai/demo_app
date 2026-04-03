@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
 import { SmartTable, Column } from '../SmartTable';
 import { MarbimAIButton } from '../MarbimAIButton';
+import { InventoryManagementSetup } from './InventoryManagementSetup';
+import { motion } from 'motion/react';
 import { 
   Box, TrendingDown, Clock, AlertTriangle, Package, Calendar, 
   FileText, Activity, Plus, Download, Filter, Search, Zap,
@@ -35,6 +38,8 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
+import { GarmentsModuleDataToolbar } from '../fabric/GarmentsModuleDataToolbar';
+import { MARBIM_PROMPTS } from '../../config/garmentsIndustry';
 
 interface InventoryManagementProps {
   initialSubPage?: string;
@@ -42,12 +47,12 @@ interface InventoryManagementProps {
   isAIPanelOpen: boolean;
 }
 
-// Dashboard Data
+// Dashboard — CMT material & FG posture
 const dashboardSummary = [
-  { label: 'Total Stock Value', value: '$2.4M', icon: DollarSign, color: '#57ACAF' },
-  { label: 'Material Availability', value: '94%', icon: CheckCircle2, color: '#EAB308' },
-  { label: 'Shortage Alerts', value: '12', icon: AlertTriangle, color: '#D0342C' },
-  { label: 'Turnover Ratio', value: '6.2x', icon: RefreshCw, color: '#6F83A7' },
+  { label: 'RM + trims book value', value: '$2.4M', icon: DollarSign, color: '#57ACAF' },
+  { label: 'Styles clear to cut (4wk)', value: '94%', icon: CheckCircle2, color: '#EAB308' },
+  { label: 'Shortages vs SO', value: '12', icon: AlertTriangle, color: '#D0342C' },
+  { label: 'Inventory turns (annual)', value: '6.2x', icon: RefreshCw, color: '#6F83A7' },
 ];
 
 const materialFlowData = [
@@ -397,14 +402,16 @@ const demandForecastData = [
 ];
 
 export function InventoryManagement({ initialSubPage = 'dashboard', onAskMarbim, isAIPanelOpen }: InventoryManagementProps) {
-  const [currentView, setCurrentView] = useState(initialSubPage);
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
+  const [currentView, setCurrentView] = useState(routeSubpage);
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
   const [materialDrawerOpen, setMaterialDrawerOpen] = useState(false);
+  const [isSetupComplete, setIsSetupComplete] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Close drawer when AI panel opens
   useEffect(() => {
@@ -416,11 +423,11 @@ export function InventoryManagement({ initialSubPage = 'dashboard', onAskMarbim,
   // Material Master Columns
   const materialMasterColumns: Column[] = [
     { key: 'materialId', label: 'Material ID', sortable: true },
-    { key: 'category', label: 'Category', sortable: true },
-    { key: 'description', label: 'Description' },
-    { key: 'currentStock', label: 'Stock', sortable: true },
-    { key: 'unit', label: 'Unit' },
-    { key: 'supplier', label: 'Supplier' },
+    { key: 'category', label: 'RM class', sortable: true },
+    { key: 'description', label: 'Spec / construction' },
+    { key: 'currentStock', label: 'On-hand', sortable: true },
+    { key: 'unit', label: 'UoM' },
+    { key: 'supplier', label: 'Mill / supplier' },
     { 
       key: 'status', 
       label: 'Status',
@@ -607,6 +614,46 @@ export function InventoryManagement({ initialSubPage = 'dashboard', onAskMarbim,
 
   const renderDashboard = () => (
     <div className="space-y-6">
+      {/* Setup Banner */}
+      {!isSetupComplete && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden bg-gradient-to-br from-[#EAB308]/20 via-[#EAB308]/10 to-transparent border border-[#EAB308]/30 rounded-2xl p-6"
+        >
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute inset-0" style={{
+              backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+              backgroundSize: '32px 32px'
+            }} />
+          </div>
+          
+          <div className="relative flex items-start justify-between gap-6">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#EAB308] to-[#EAB308]/60 flex items-center justify-center shadow-lg shadow-[#EAB308]/20 shrink-0">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl text-white mb-2">Set Up Your Inventory Management Module</h3>
+                <p className="text-sm text-[#6F83A7] mb-4">
+                  MARBIM can guide you through a quick 5-step setup to configure materials, reorder rules, warehouses, and AI-powered workflows. 
+                  Get demand forecasting, smart reordering, and stockout prevention up and running in under 10 minutes.
+                </p>
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={() => setShowSetup(true)}
+                    className="bg-gradient-to-r from-[#EAB308] to-[#EAB308]/80 hover:from-[#EAB308]/90 hover:to-[#EAB308]/70 text-black shadow-lg shadow-[#EAB308]/20"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Let MARBIM Guide You
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-[#57ACAF]/10 via-transparent to-[#EAB308]/10 border border-white/10 rounded-2xl p-8 overflow-hidden">
         <div className="absolute inset-0 opacity-5">
@@ -866,27 +913,22 @@ export function InventoryManagement({ initialSubPage = 'dashboard', onAskMarbim,
       </div>
 
       <TabsContent value="all-materials" className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-white mb-1">Material Master Registry</h3>
-            <p className="text-sm text-[#6F83A7]">Central database of all raw materials, trims, and accessories</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              onClick={() => onAskMarbim('Analyze material master data for optimization opportunities. Identify duplicate entries, consolidation possibilities, and recommend supplier rationalization strategies.')}
-              variant="outline"
-              className="border-white/10 text-white hover:bg-white/5 bg-[rgba(255,255,255,0)]"
-            >
-              <Sparkles className="w-3 h-3 mr-1" />
-              AI Analysis
-            </Button>
-            <Button size="sm" className="bg-gradient-to-r from-[#57ACAF] to-[#57ACAF]/80 text-white hover:from-[#57ACAF]/90">
-              <Plus className="w-3 h-3 mr-1" />
-              Add Material
-            </Button>
-          </div>
-        </div>
+        <GarmentsModuleDataToolbar
+          className="mb-2"
+          title="Material master — fabrics, trims, packaging"
+          subtitle="GSM, UoM, MOQ, and warehouse locations for cut-make-trim planning"
+          onFilter={() => toast.info('Filter by RM class or supplier')}
+          onExport={() => toast.success('Exporting BOM-linked materials…')}
+          exportLabel="Export material list"
+          onRefresh={() => toast.success('Registry refreshed')}
+          onAskMarbim={onAskMarbim}
+          askPrompt={MARBIM_PROMPTS.inventoryMaterials}
+          primaryAction={{
+            label: 'Add RM / trim',
+            onClick: () => toast.success('Open new material wizard'),
+            icon: Plus,
+          }}
+        />
 
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
           <SmartTable
@@ -1561,6 +1603,19 @@ export function InventoryManagement({ initialSubPage = 'dashboard', onAskMarbim,
       aiInsightsCount={3}
     >
       {renderContent()}
+      
+      {/* Setup Wizard */}
+      {showSetup && (
+        <InventoryManagementSetup
+          onComplete={() => {
+            setIsSetupComplete(true);
+            setShowSetup(false);
+            toast.success('Inventory Management module is now configured!');
+          }}
+          onClose={() => setShowSetup(false)}
+          onAskMarbim={onAskMarbim}
+        />
+      )}
     </PageLayout>
   );
 }

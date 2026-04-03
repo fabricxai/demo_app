@@ -1,4 +1,4 @@
-import marbimAILogo from "figma:asset/6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe.png";
+import marbimAILogo from "../assets/marbim-logo.png";
 
 interface AskMarbimImageProps {
   size?: "sm" | "md" | "lg";

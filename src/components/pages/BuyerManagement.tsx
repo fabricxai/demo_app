@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -13,6 +14,7 @@ import { WorkflowStepper } from '../WorkflowStepper';
 import { MarbimAIButton } from '../MarbimAIButton';
 import { ModuleSetupBanner } from '../ModuleSetupBanner';
 import { BuyerManagementIntro } from './BuyerManagementIntro';
+import { BuyerManagementSetup } from './BuyerManagementSetup';
 import { useDatabase, MODULE_NAMES, canPerformAction } from '../../utils/supabase';
 import { 
   Users, TrendingUp, AlertTriangle, CheckCircle2, Eye, Edit, Search,
@@ -49,13 +51,15 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
+import { GarmentsModuleDataToolbar } from '../fabric/GarmentsModuleDataToolbar';
+import { MARBIM_PROMPTS } from '../../config/garmentsIndustry';
 
-// Dashboard Data
+// Dashboard — apparel account health
 const dashboardSummary = [
-  { label: 'Tier A Buyers', value: 12, score: 94, color: '#57ACAF' },
-  { label: 'Tier B Buyers', value: 28, score: 78, color: '#EAB308' },
-  { label: 'Tier C Buyers', value: 45, score: 62, color: '#6F83A7' },
-  { label: 'At Risk', value: 8, score: 45, color: '#D0342C' },
+  { label: 'Strategic accounts (A)', value: 12, score: 94, color: '#57ACAF' },
+  { label: 'Growth accounts (B)', value: 28, score: 78, color: '#EAB308' },
+  { label: 'Transactional (C)', value: 45, score: 62, color: '#6F83A7' },
+  { label: 'OTIF / quality watch', value: 8, score: 45, color: '#D0342C' },
 ];
 
 const revenueByBuyerData = [
@@ -87,6 +91,8 @@ const allBuyersData = [
     lastContacted: '2024-10-25',
     status: 'Active',
     contact: 'Maria Garcia',
+    categoryMix: 'Ladies knit · basics',
+    incoterms: 'FOB Chittagong',
   },
   {
     id: 2,
@@ -99,6 +105,8 @@ const allBuyersData = [
     lastContacted: '2024-10-26',
     status: 'Active',
     contact: 'Carlos Rodriguez',
+    categoryMix: 'Fast fashion · multi-category',
+    incoterms: 'FCA Dhaka',
   },
   {
     id: 3,
@@ -111,6 +119,8 @@ const allBuyersData = [
     lastContacted: '2024-10-20',
     status: 'Active',
     contact: 'John Smith',
+    categoryMix: 'Denim · fleece',
+    incoterms: 'FOB Chittagong',
   },
   {
     id: 4,
@@ -123,6 +133,8 @@ const allBuyersData = [
     lastContacted: '2024-10-24',
     status: 'Active',
     contact: 'Sarah Johnson',
+    categoryMix: 'Activewear · performance knit',
+    incoterms: 'DAP warehouse',
   },
   {
     id: 5,
@@ -135,6 +147,8 @@ const allBuyersData = [
     lastContacted: '2024-09-15',
     status: 'Watch',
     contact: 'David Lee',
+    categoryMix: 'Promo wear',
+    incoterms: 'EXW',
   },
 ];
 
@@ -223,11 +237,12 @@ interface BuyerManagementProps {
 }
 
 export function BuyerManagement({ initialSubPage = 'dashboard', onAskMarbim, onNavigateToPage, isAIPanelOpen }: BuyerManagementProps) {
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
   // Database hook
   const db = useDatabase();
   
   // UI State
-  const [currentView, setCurrentView] = useState<string>(initialSubPage);
+  const [currentView, setCurrentView] = useState<string>(routeSubpage);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerData, setDrawerData] = useState<DetailDrawerData | null>(null);
@@ -238,6 +253,8 @@ export function BuyerManagement({ initialSubPage = 'dashboard', onAskMarbim, onN
   const [feedbackDrawerOpen, setFeedbackDrawerOpen] = useState(false);
   const [selectedFeedback, setSelectedFeedback] = useState<any>(null);
   const [showModuleSetup, setShowModuleSetup] = useState(false);
+  const [setupWizardOpen, setSetupWizardOpen] = useState(false);
+  const [showSetupBanner, setShowSetupBanner] = useState(true);
   const [addBuyerDrawerOpen, setAddBuyerDrawerOpen] = useState(false);
   const [logIssueDrawerOpen, setLogIssueDrawerOpen] = useState(false);
   
@@ -260,10 +277,9 @@ export function BuyerManagement({ initialSubPage = 'dashboard', onAskMarbim, onN
     { label: 'At Risk', value: atRiskBuyers.length, score: 45, color: '#D0342C' },
   ];
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Close all drawers when AI panel opens
   useEffect(() => {
@@ -472,10 +488,20 @@ export function BuyerManagement({ initialSubPage = 'dashboard', onAskMarbim, onN
 
   // All Buyers Columns
   const allBuyersColumns: Column[] = [
-    { key: 'buyerName', label: 'Buyer Name', sortable: true },
+    { key: 'buyerName', label: 'Buyer / brand', sortable: true },
+    {
+      key: 'categoryMix',
+      label: 'Category mix',
+      render: (v) => v || '—',
+    },
+    {
+      key: 'incoterms',
+      label: 'Primary incoterm',
+      render: (v) => v || '—',
+    },
     { 
       key: 'tier', 
-      label: 'Tier',
+      label: 'Account tier',
       render: (value) => {
         const colors: any = {
           'A': 'bg-[#57ACAF]/10 text-[#57ACAF]',
@@ -497,7 +523,7 @@ export function BuyerManagement({ initialSubPage = 'dashboard', onAskMarbim, onN
     },
     { 
       key: 'revenueYTD', 
-      label: 'Revenue (YTD)', 
+      label: 'Shipment value (YTD)', 
       sortable: true,
       render: (value) => <span className="text-[#57ACAF]">${(value / 1000).toFixed(0)}K</span>
     },
@@ -706,10 +732,12 @@ export function BuyerManagement({ initialSubPage = 'dashboard', onAskMarbim, onN
   const renderDashboard = () => (
     <>
       {/* Module Setup Banner */}
-      <ModuleSetupBanner
-        moduleName="Buyer Management"
-        onSetupClick={() => setShowModuleSetup(true)}
-      />
+      {showSetupBanner && (
+        <ModuleSetupBanner
+          moduleName="Buyer Management"
+          onSetupClick={() => setSetupWizardOpen(true)}
+        />
+      )}
 
       {/* Hero Banner with Executive Summary */}
       <div className="bg-gradient-to-br from-[#57ACAF]/10 via-[#EAB308]/5 to-[#6F83A7]/10 border border-white/10 rounded-2xl p-8 mb-6 relative overflow-hidden">
@@ -1245,26 +1273,22 @@ export function BuyerManagement({ initialSubPage = 'dashboard', onAskMarbim, onN
 
   const renderBuyerDirectory = () => (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-white mb-1">Buyer Directory</h2>
-          <p className="text-sm text-[#6F83A7]">Searchable, tiered database of all buyers with health and performance metrics</p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="border-white/10">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
-          <Button 
-            className="bg-[#EAB308] hover:bg-[#EAB308]/90 text-black"
-            onClick={() => setAddBuyerDrawerOpen(true)}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Buyer
-          </Button>
-        </div>
-      </div>
+      <GarmentsModuleDataToolbar
+        className="mb-6"
+        title="Buyer directory — apparel accounts"
+        subtitle="Brands, retailers, and traders with tier, shipment value, incoterms, and category mix"
+        onFilter={() => toast.info('Filter by season, category, or incoterm')}
+        onExport={() => toast.success('Preparing buyer export…')}
+        exportLabel="Export account list"
+        onRefresh={() => toast.success('Directory refreshed')}
+        onAskMarbim={onAskMarbim}
+        askPrompt={MARBIM_PROMPTS.buyerDirectory}
+        primaryAction={{
+          label: 'Add buyer account',
+          onClick: () => setAddBuyerDrawerOpen(true),
+          icon: Plus,
+        }}
+      />
 
       <Tabs key={`buyer-directory-${currentView}`} defaultValue="all-buyers" className="space-y-6">
         {/* Tab Navigation */}
@@ -1303,11 +1327,11 @@ export function BuyerManagement({ initialSubPage = 'dashboard', onAskMarbim, onN
 
         <TabsContent value="all-buyers" className="space-y-6">
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-            <h3 className="text-white mb-4">All Buyers</h3>
+            <h3 className="text-white mb-4">All buyer accounts</h3>
             <SmartTable
               columns={allBuyersColumns}
               data={buyers}
-              searchPlaceholder="Search buyers..."
+              searchPlaceholder="Search brand, category, incoterm, country…"
               onRowClick={handleRowClick}
             />
           </div>
@@ -3842,6 +3866,19 @@ export function BuyerManagement({ initialSubPage = 'dashboard', onAskMarbim, onN
       >
         {renderContent()}
       </PageLayout>
+
+      {/* Setup Wizard */}
+      {setupWizardOpen && (
+        <BuyerManagementSetup
+          onComplete={() => {
+            setSetupWizardOpen(false);
+            setShowSetupBanner(false);
+            toast.success('Buyer Management module activated!');
+          }}
+          onClose={() => setSetupWizardOpen(false)}
+          onAskMarbim={onAskMarbim}
+        />
+      )}
 
       {/* Buyer Detail Drawer - Premium Design */}
       <BuyerDetailDrawer

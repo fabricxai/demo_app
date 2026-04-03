@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
+import { fabricRightDrawerClassWithZ } from './fabric/drawerChrome';
 import { X, MessageSquare, ThumbsUp, ThumbsDown, TrendingUp, Clock, User, Calendar, Mail, Phone, Building2, Target, AlertTriangle, CheckCircle2, Sparkles, Send, FileText, History, Lightbulb, BarChart3, Activity, Star, Zap, ArrowRight, Eye, Edit } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -29,7 +30,7 @@ export function FeedbackDetailDrawer({ isOpen, onClose, feedback, onAskMarbim }:
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed top-16 bottom-[72px] right-0 w-full max-w-[1000px] bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 shadow-2xl z-[101] flex flex-col"
+            className={fabricRightDrawerClassWithZ('max-w-[1000px]', 'z-[101]')}
           >
             {/* Header */}
             <div className="relative border-b border-white/10 bg-gradient-to-r from-[#57ACAF]/5 via-transparent to-[#EAB308]/5">

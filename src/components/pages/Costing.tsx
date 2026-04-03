@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -7,6 +8,7 @@ import { DetailDrawer, DetailDrawerData } from '../DetailDrawer';
 import { WorkflowStepper } from '../WorkflowStepper';
 import { MarbimAIButton } from '../MarbimAIButton';
 import { ModuleSetupBanner } from '../ModuleSetupBanner';
+import { CostingSetup } from './CostingSetup';
 import { CostSheetDetailDrawer } from '../CostSheetDetailDrawer';
 import { CreateCostSheetDrawer } from '../CreateCostSheetDrawer';
 import { useDatabase, MODULE_NAMES, canPerformAction } from '../../utils/supabase';
@@ -387,11 +389,12 @@ interface CostingProps {
 }
 
 export function Costing({ initialSubPage = 'dashboard', onAskMarbim }: CostingProps) {
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
   // Database hook
   const db = useDatabase();
   
   // UI State
-  const [currentView, setCurrentView] = useState<string>(initialSubPage);
+  const [currentView, setCurrentView] = useState<string>(routeSubpage);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerData, setDrawerData] = useState<DetailDrawerData | null>(null);
@@ -399,6 +402,8 @@ export function Costing({ initialSubPage = 'dashboard', onAskMarbim }: CostingPr
   const [selectedCostSheet, setSelectedCostSheet] = useState<any>(null);
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false);
   const [showModuleSetup, setShowModuleSetup] = useState(false);
+  const [setupWizardOpen, setSetupWizardOpen] = useState(false);
+  const [showSetupBanner, setShowSetupBanner] = useState(true);
   
   // Database State
   const [costSheets, setCostSheets] = useState<any[]>([]);
@@ -419,10 +424,9 @@ export function Costing({ initialSubPage = 'dashboard', onAskMarbim }: CostingPr
     { label: 'Avg. Margin', value: `${avgMargin}%`, icon: Target, color: '#57ACAF' },
   ];
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Load data from database on mount
   useEffect(() => {
@@ -588,10 +592,12 @@ export function Costing({ initialSubPage = 'dashboard', onAskMarbim }: CostingPr
   const renderDashboard = () => (
     <>
       {/* Module Setup Banner */}
-      <ModuleSetupBanner 
-        moduleName="Costing"
-        onSetupClick={() => setShowModuleSetup(true)}
-      />
+      {showSetupBanner && (
+        <ModuleSetupBanner 
+          moduleName="Costing"
+          onSetupClick={() => setSetupWizardOpen(true)}
+        />
+      )}
 
       {/* Hero Banner with Executive Summary */}
       <div className="bg-gradient-to-br from-[#57ACAF]/10 via-[#EAB308]/5 to-[#6F83A7]/10 border border-white/10 rounded-2xl p-8 mb-6 relative overflow-hidden">
@@ -3193,6 +3199,19 @@ export function Costing({ initialSubPage = 'dashboard', onAskMarbim }: CostingPr
         module="Costing Sheet"
         subPage={currentView}
       />
+
+      {/* Setup Wizard */}
+      {setupWizardOpen && (
+        <CostingSetup
+          onComplete={() => {
+            setSetupWizardOpen(false);
+            setShowSetupBanner(false);
+            toast.success('Costing module activated!');
+          }}
+          onClose={() => setSetupWizardOpen(false)}
+          onAskMarbim={onAskMarbim}
+        />
+      )}
 
       {/* Cost Sheet Detail Drawer */}
       <CostSheetDetailDrawer

@@ -373,6 +373,121 @@ app.get("/make-server-1f923fcd/health", (c) => {
 });
 
 // ============================================
+// Demo Request Endpoints
+// ============================================
+
+/**
+ * Submit a demo request
+ * Stores lead information for sales team
+ */
+app.post("/make-server-1f923fcd/demo-requests/submit", async (c) => {
+  try {
+    const demoData = await c.req.json();
+    
+    if (!demoData.fullName || !demoData.email || !demoData.companyName) {
+      return c.json({ error: 'Full name, email, and company name are required' }, 400);
+    }
+
+    // Generate unique request ID
+    const requestId = `demo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Store demo request
+    const demoRequest = {
+      id: requestId,
+      ...demoData,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+
+    await kv.set(`demo-request:${requestId}`, demoRequest);
+    
+    // Also store in a list for easy retrieval by sales team
+    const requestsList = await kv.get('demo-requests:list') || { requests: [] };
+    requestsList.requests.unshift(requestId); // Add to beginning
+    await kv.set('demo-requests:list', requestsList);
+
+    console.log('Demo request submitted:', {
+      id: requestId,
+      email: demoData.email,
+      company: demoData.companyName,
+    });
+
+    return c.json({ 
+      success: true, 
+      requestId,
+      message: 'Demo request submitted successfully' 
+    });
+  } catch (error) {
+    console.error('Demo request submission error:', error);
+    return c.json({ error: error.message || 'Failed to submit demo request' }, 500);
+  }
+});
+
+/**
+ * Get all demo requests (for sales team)
+ */
+app.get("/make-server-1f923fcd/demo-requests/list", async (c) => {
+  try {
+    const auth = validateAuth(c);
+    if (!auth || (auth.role !== 'admin' && auth.role !== 'sales')) {
+      return c.json({ error: 'Unauthorized - Admin or Sales role required' }, 403);
+    }
+
+    const requestsList = await kv.get('demo-requests:list') || { requests: [] };
+    const requests = [];
+
+    // Fetch each request
+    for (const requestId of requestsList.requests) {
+      const request = await kv.get(`demo-request:${requestId}`);
+      if (request) {
+        requests.push(request);
+      }
+    }
+
+    return c.json({ requests });
+  } catch (error) {
+    console.error('Error fetching demo requests:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+/**
+ * Update demo request status
+ */
+app.put("/make-server-1f923fcd/demo-requests/update-status", async (c) => {
+  try {
+    const auth = validateAuth(c);
+    if (!auth || (auth.role !== 'admin' && auth.role !== 'sales')) {
+      return c.json({ error: 'Unauthorized - Admin or Sales role required' }, 403);
+    }
+
+    const { requestId, status, notes } = await c.req.json();
+    
+    if (!requestId || !status) {
+      return c.json({ error: 'Request ID and status are required' }, 400);
+    }
+
+    const request = await kv.get(`demo-request:${requestId}`);
+    if (!request) {
+      return c.json({ error: 'Demo request not found' }, 404);
+    }
+
+    // Update status
+    request.status = status;
+    request.salesNotes = notes || request.salesNotes;
+    request.updatedAt = new Date().toISOString();
+    request.updatedBy = auth.userId;
+
+    await kv.set(`demo-request:${requestId}`, request);
+
+    return c.json({ success: true, request });
+  } catch (error) {
+    console.error('Error updating demo request:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// ============================================
 // Data Storage Endpoints with RBAC
 // ============================================
 

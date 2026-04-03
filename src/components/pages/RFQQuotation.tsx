@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -7,6 +8,7 @@ import { DetailDrawer, DetailDrawerData } from '../DetailDrawer';
 import { WorkflowStepper } from '../WorkflowStepper';
 import { MarbimAIButton } from '../MarbimAIButton';
 import { ModuleSetupBanner } from '../ModuleSetupBanner';
+import { RFQQuotationSetup } from './RFQQuotationSetup';
 import { BuyerRFQDetailDrawer } from '../BuyerRFQDetailDrawer';
 import { QuoteScenarioDetailDrawer } from '../QuoteScenarioDetailDrawer';
 import { UploadRFQDrawer } from '../UploadRFQDrawer';
@@ -328,11 +330,12 @@ interface RFQQuotationProps {
 }
 
 export function RFQQuotation({ initialSubPage = 'dashboard', onAskMarbim, onOpenAI, isAIPanelOpen }: RFQQuotationProps) {
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
   // Database hook
   const db = useDatabase();
   
   // UI State
-  const [currentView, setCurrentView] = useState<string>(initialSubPage);
+  const [currentView, setCurrentView] = useState<string>(routeSubpage);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerData, setDrawerData] = useState<DetailDrawerData | null>(null);
@@ -343,6 +346,8 @@ export function RFQQuotation({ initialSubPage = 'dashboard', onAskMarbim, onOpen
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false);
   const [createScenarioDrawerOpen, setCreateScenarioDrawerOpen] = useState(false);
   const [showModuleSetup, setShowModuleSetup] = useState(false);
+  const [setupWizardOpen, setSetupWizardOpen] = useState(false);
+  const [showSetupBanner, setShowSetupBanner] = useState(true);
   
   // Database State
   const [rfqs, setRfqs] = useState<any[]>([]);
@@ -367,10 +372,9 @@ export function RFQQuotation({ initialSubPage = 'dashboard', onAskMarbim, onOpen
     { label: 'Win Rate', value: `${winRate}%`, icon: TrendingUp, color: '#57ACAF' },
   ];
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Close all drawers when AI panel opens
   useEffect(() => {
@@ -598,12 +602,15 @@ export function RFQQuotation({ initialSubPage = 'dashboard', onAskMarbim, onOpen
 
   const renderDashboard = () => (
     <>
-      {/* Hero Banner with Executive Summary */}
       {/* Module Setup Banner */}
-      <ModuleSetupBanner 
-        moduleName="RFQ & Quotation"
-        onSetupClick={() => setShowModuleSetup(true)}
-      />
+      {showSetupBanner && (
+        <ModuleSetupBanner 
+          moduleName="RFQ & Quotation"
+          onSetupClick={() => setSetupWizardOpen(true)}
+        />
+      )}
+
+      {/* Hero Banner with Executive Summary */}
 
       <div className="bg-gradient-to-br from-[#57ACAF]/10 via-[#EAB308]/5 to-[#6F83A7]/10 border border-white/10 rounded-2xl p-8 mb-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(87,172,175,0.1),transparent_50%)]" />
@@ -4964,6 +4971,19 @@ export function RFQQuotation({ initialSubPage = 'dashboard', onAskMarbim, onOpen
         module="RFQ & Quotation"
         subPage={currentView}
       />
+
+      {/* Setup Wizard */}
+      {setupWizardOpen && (
+        <RFQQuotationSetup
+          onComplete={() => {
+            setSetupWizardOpen(false);
+            setShowSetupBanner(false);
+            toast.success('RFQ & Quotation module activated!');
+          }}
+          onClose={() => setSetupWizardOpen(false)}
+          onAskMarbim={onAskMarbim}
+        />
+      )}
 
       {/* Premium Buyer RFQ Detail Drawer */}
       <BuyerRFQDetailDrawer

@@ -1,10 +1,9 @@
-import image_6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe from 'figma:asset/6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe.png';
 import { LucideIcon, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from './ui/utils';
 import { Button } from './ui/button';
 import { MarbimAIButton } from './MarbimAIButton';
-import marbimLogo from 'figma:asset/c71eace56b6821982da9dde651f71e10cdc44ea3.png';
+import marbimLogoMark from '../assets/marbim-logo.png';
 
 interface AICardProps {
   title: string;
@@ -34,7 +33,7 @@ export function AICard({ title, icon: Icon = Sparkles, children, className, marb
           title="Ask MARBIM AI Assistant"
         >
           <img 
-            src={image_6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe} 
+            src={marbimLogoMark} 
             alt="Ask MARBIM" 
             className="w-8 h-8 object-contain transition-transform duration-180 group-hover:scale-110"
           />

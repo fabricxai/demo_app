@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { fabricRightDrawerClassWithZ } from './fabric/drawerChrome';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X, Upload, Image as ImageIcon, Package, DollarSign, Sparkles,
@@ -349,7 +350,7 @@ export function AddProductDrawer({ isOpen, onClose, onSuccess }: AddProductDrawe
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="fixed top-16 right-0 bottom-[72px] w-full max-w-[1000px] bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 shadow-2xl z-[101] flex flex-col pointer-events-auto"
+        className={fabricRightDrawerClassWithZ('max-w-[1000px]', 'z-[101]', 'pointer-events-auto')}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

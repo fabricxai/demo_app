@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
+import { fabricRightDrawerClass } from './fabric/drawerChrome';
 import { useState, useRef } from 'react';
 import { 
   X, Edit2, Send, Copy, Download, BarChart3, 
@@ -265,7 +266,7 @@ export function SupplierRFQDetailDrawer({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-16 bottom-[72px] w-full max-w-[1000px] bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 shadow-2xl z-50 flex flex-col"
+            className={fabricRightDrawerClass('max-w-[1000px]')}
           >
             {/* Header */}
             <div className="relative px-8 py-6 border-b border-white/10 bg-gradient-to-r from-[#57ACAF]/5 via-transparent to-[#EAB308]/5 flex-shrink-0">

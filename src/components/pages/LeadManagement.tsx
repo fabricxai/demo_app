@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { motion } from 'motion/react';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
@@ -10,10 +11,12 @@ import { CampaignDetailDrawer } from '../CampaignDetailDrawer';
 import { ConversationDetailDrawer } from '../ConversationDetailDrawer';
 import { WorkflowStepper } from '../WorkflowStepper';
 import { MarbimAIButton } from '../MarbimAIButton';
+import { ModuleSetupBanner } from '../ModuleSetupBanner';
 import { TemplateDrawer } from '../TemplateDrawer';
 import { EmailCompositionDrawer } from '../EmailCompositionDrawer';
 import { SegmentCreationDrawer } from '../SegmentCreationDrawer';
 import { AddLeadDrawer } from '../AddLeadDrawer';
+import { LeadManagementSetup } from './LeadManagementSetup';
 import { useDatabase, MODULE_NAMES, canPerformAction } from '../../utils/supabase';
 import { 
   Users, TrendingUp, Clock, Target, BarChart3, 
@@ -24,6 +27,8 @@ import {
   Copy, Edit, Trash2, BarChart2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '../ui/utils';
+import { fabricSheetChromeClass } from '../fabric/drawerChrome';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback } from '../ui/avatar';
@@ -59,22 +64,11 @@ import {
   FunnelChart,
   Funnel,
 } from 'recharts';
+import { GarmentsModuleDataToolbar } from '../fabric/GarmentsModuleDataToolbar';
+import { GarmentsAISection } from '../fabric/GarmentsAISection';
+import { LEAD_PIPELINE_STAGES, MARBIM_PROMPTS } from '../../config/garmentsIndustry';
 
-// Dashboard Data
-const dashboardSummary = [
-  { label: 'New Leads', value: '48', icon: Users, color: '#57ACAF' },
-  { label: 'Lead→RFQ Conversion', value: '32%', icon: TrendingUp, color: '#EAB308' },
-  { label: 'Avg Response Time', value: '1.8d', icon: Clock, color: '#6F83A7' },
-  { label: 'High-fit Leads', value: '15', icon: Target, color: '#57ACAF' },
-];
-
-const conversionFunnelData = [
-  { stage: 'New Leads', count: 127, fill: '#57ACAF' },
-  { stage: 'Contacted', count: 85, fill: '#6F83A7' },
-  { stage: 'Qualified', count: 52, fill: '#EAB308' },
-  { stage: 'RFQ Sent', count: 28, fill: '#D0342C' },
-  { stage: 'Closed', count: 12, fill: '#9333EA' },
-];
+const conversionFunnelData = [...LEAD_PIPELINE_STAGES];
 
 const touchpointTimelineData = [
   { week: 'W1', email: 45, linkedin: 28, phone: 12 },
@@ -83,57 +77,67 @@ const touchpointTimelineData = [
   { week: 'W4', email: 55, linkedin: 38, phone: 20 },
 ];
 
-// Leads List Data
+// Leads — apparel sourcing context (buyers, categories, compliance)
 const allLeadsData = [
   {
     id: 1,
-    leadName: 'John Smith',
-    company: 'TrendWear UK',
+    leadName: 'Anna Bergström',
+    company: 'Nordic Outerwear AB',
+    buyerSegment: 'EU retailer · Outerwear',
+    productFocus: 'Recycled polyester shells · FW26',
     country: 'United Kingdom',
-    source: 'LinkedIn',
+    source: 'Canton Fair',
     owner: 'Sarah M.',
     score: 92,
-    status: 'Qualified',
+    status: 'Sampling',
   },
   {
     id: 2,
-    leadName: 'Emma Wilson',
-    company: 'Fashion Global',
+    leadName: 'Marcus Webb',
+    company: 'Pacific Denim Co.',
+    buyerSegment: 'Brand · Denim',
+    productFocus: 'Rigid denim 12oz · low-impact wash',
     country: 'USA',
-    source: 'Email',
+    source: 'LinkedIn',
     owner: 'John D.',
     score: 85,
-    status: 'Contacted',
+    status: 'Tech pack / spec',
   },
   {
     id: 3,
-    leadName: 'Michael Chen',
-    company: 'SportStyle Inc',
-    country: 'Canada',
-    source: 'Trade Show',
+    leadName: 'Priya Nair',
+    company: 'Monsoon Kids Pvt Ltd',
+    buyerSegment: 'Private label · Childrenswear',
+    productFocus: 'Organic cotton knits · GOTS ask',
+    country: 'India',
+    source: 'Referral',
     owner: 'Lisa K.',
     score: 78,
-    status: 'New',
+    status: 'New enquiry',
   },
   {
     id: 4,
     leadName: 'Sophie Martin',
     company: 'EcoFashion EU',
+    buyerSegment: 'DTC brand · Activewear',
+    productFocus: 'Seamless bras · OEKO-TEX',
     country: 'Germany',
     source: 'LinkedIn',
     owner: 'Sarah M.',
     score: 88,
-    status: 'RFQ',
+    status: 'Costing & quote',
   },
   {
     id: 5,
-    leadName: 'David Lee',
-    company: 'Urban Threads',
+    leadName: 'James Okoro',
+    company: 'Lagos Apparel Trading',
+    buyerSegment: 'Wholesaler · Basics',
+    productFocus: 'CMT polos · 5k MOQ / colour',
     country: 'Australia',
     source: 'Website',
     owner: 'John D.',
     score: 65,
-    status: 'New',
+    status: 'New enquiry',
   },
 ];
 
@@ -145,69 +149,69 @@ const campaignsData = [
   {
     id: 1,
     campaignId: 'CMP-2024-5847',
-    name: 'EU Fashion Outreach',
+    name: 'EU SS26 Outerwear buyers',
     status: 'Active',
-    audience: 'EU Buyers',
+    audience: 'Retail · jackets & parkas',
     sendWindow: '2024-10-20 - 2024-11-20',
     conversionRate: 12.5,
   },
   {
     id: 2,
     campaignId: 'CMP-2024-5848',
-    name: 'Sustainable Fabrics',
+    name: 'GOTS / recycled fabric story',
     status: 'Active',
-    audience: 'Eco-conscious Buyers',
+    audience: 'Sustainability leads',
     sendWindow: '2024-10-15 - 2024-11-15',
     conversionRate: 18.3,
   },
   {
     id: 3,
     campaignId: 'CMP-2024-5845',
-    name: 'Trade Show Follow-up',
+    name: 'Intertextile Shanghai follow-up',
     status: 'Completed',
-    audience: 'Trade Show Contacts',
+    audience: 'Fabric & trim exhibitors',
     sendWindow: '2024-09-01 - 2024-09-30',
     conversionRate: 22.8,
   },
 ];
 
 const campaignAnalyticsData = [
-  { campaign: 'EU Fashion', openRate: 68, ctr: 24, responseRate: 15, conversion: 12.5 },
-  { campaign: 'Sustainable', openRate: 72, ctr: 28, responseRate: 18, conversion: 18.3 },
-  { campaign: 'Trade Show', openRate: 65, ctr: 22, responseRate: 20, conversion: 22.8 },
+  { campaign: 'EU SS26 outerwear', openRate: 68, ctr: 24, responseRate: 15, conversion: 12.5 },
+  { campaign: 'GOTS / recycled story', openRate: 72, ctr: 28, responseRate: 18, conversion: 18.3 },
+  { campaign: 'Intertextile follow-up', openRate: 65, ctr: 22, responseRate: 20, conversion: 22.8 },
 ];
 
 // Lead Inbox Data
 const conversationsData = [
   {
     id: 1,
-    contactName: 'John Smith',
-    company: 'TrendWear UK',
+    contactName: 'Anna Bergström',
+    company: 'Nordic Outerwear AB',
     channel: 'Email',
-    lastMessage: 'Looking forward to the fabric samples',
+    lastMessage: 'Please confirm shell fabric GSM and hangtag compliance file',
     timestamp: '2 hours ago',
     status: 'New Reply',
-    intent: 'Interest',
+    intent: 'Tech pack',
   },
   {
     id: 2,
-    contactName: 'Emma Wilson',
-    company: 'Fashion Global',
+    contactName: 'Marcus Webb',
+    company: 'Pacific Denim Co.',
     channel: 'WhatsApp',
-    lastMessage: 'Can you send pricing for denim?',
+    lastMessage: 'Need FOB Chittagong price for 8k pcs wash program B',
     timestamp: '5 hours ago',
     status: 'New Reply',
-    intent: 'RFQ',
+    intent: 'Costing',
   },
   {
     id: 3,
     contactName: 'Sophie Martin',
     company: 'EcoFashion EU',
     channel: 'LinkedIn',
-    lastMessage: 'Thank you for the catalog',
+    lastMessage: 'Thanks — can you share last AQL report for similar styles?',
     timestamp: '1 day ago',
     status: 'Follow-up',
-    intent: 'Info Request',
+    intent: 'Compliance',
   },
 ];
 
@@ -222,11 +226,12 @@ interface LeadManagementProps {
 }
 
 export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNavigateToPage, isAIPanelOpen }: LeadManagementProps) {
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
   // Database hook
   const db = useDatabase();
   
   // UI State
-  const [currentView, setCurrentView] = useState<string>(initialSubPage);
+  const [currentView, setCurrentView] = useState<string>(routeSubpage);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerData, setDrawerData] = useState<DetailDrawerData | null>(null);
@@ -245,6 +250,8 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
   const [conversationDrawerOpen, setConversationDrawerOpen] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [addLeadDrawerOpen, setAddLeadDrawerOpen] = useState(false);
+  const [setupWizardOpen, setSetupWizardOpen] = useState(false);
+  const [showSetupBanner, setShowSetupBanner] = useState(true);
   
   // Database State
   const [leads, setLeads] = useState<any[]>([]);
@@ -257,22 +264,31 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
   const coldLeadsData = leads.filter(l => l.score < 70);
   
   // Compute dashboard KPIs from actual data
-  const newLeadsCount = leads.filter(l => l.status === 'New').length;
-  const rfqLeadsCount = leads.filter(l => l.status === 'RFQ').length;
-  const conversionRate = leads.length > 0 ? Math.round((rfqLeadsCount / leads.length) * 100) : 0;
+  const newLeadsCount = leads.filter(
+    (l) => l.status === 'New enquiry' || l.status === 'New',
+  ).length;
+  const quoteStageLeads = leads.filter(
+    (l) => l.status === 'Costing & quote' || l.status === 'RFQ',
+  ).length;
+  const conversionRate =
+    leads.length > 0 ? Math.round((quoteStageLeads / leads.length) * 100) : 0;
   const highFitCount = highFitLeadsData.length;
-  
+
   const computedDashboardSummary = [
-    { label: 'New Leads', value: newLeadsCount.toString(), icon: Users, color: '#57ACAF' },
-    { label: 'Lead→RFQ Conversion', value: `${conversionRate}%`, icon: TrendingUp, color: '#EAB308' },
-    { label: 'Avg Response Time', value: '1.8d', icon: Clock, color: '#6F83A7' },
-    { label: 'High-fit Leads', value: highFitCount.toString(), icon: Target, color: '#57ACAF' },
+    { label: 'New enquiries', value: newLeadsCount.toString(), icon: Users, color: '#57ACAF' },
+    {
+      label: 'Enquiry → quote',
+      value: `${conversionRate}%`,
+      icon: TrendingUp,
+      color: '#EAB308',
+    },
+    { label: 'Avg. buyer reply', value: '1.8d', icon: Clock, color: '#6F83A7' },
+    { label: 'A-grade fit (≥80)', value: highFitCount.toString(), icon: Target, color: '#57ACAF' },
   ];
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Close all drawers when AI panel opens
   useEffect(() => {
@@ -467,14 +483,16 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
   // All Leads Columns
   const allLeadsColumns: Column[] = [
-    { key: 'leadName', label: 'Lead Name', sortable: true },
-    { key: 'company', label: 'Company' },
-    { key: 'country', label: 'Country' },
+    { key: 'leadName', label: 'Contact', sortable: true },
+    { key: 'company', label: 'Buyer / org' },
+    { key: 'buyerSegment', label: 'Segment', render: (v) => v || '—' },
+    { key: 'productFocus', label: 'Style / category focus', render: (v) => v || '—' },
+    { key: 'country', label: 'Market' },
     { key: 'source', label: 'Source' },
-    { key: 'owner', label: 'Owner' },
+    { key: 'owner', label: 'Account mgr' },
     {
       key: 'score',
-      label: 'Score',
+      label: 'Fit score',
       sortable: true,
       render: (value) => {
         const color = value >= 80 ? 'text-[#57ACAF]' : value >= 60 ? 'text-[#EAB308]' : 'text-[#D0342C]';
@@ -483,24 +501,29 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
     },
     {
       key: 'status',
-      label: 'Status',
+      label: 'Pipeline',
       render: (value) => {
-        const colors: any = {
-          'New': 'bg-[#6F83A7]/10 text-[#6F83A7]',
-          'Contacted': 'bg-[#EAB308]/10 text-[#EAB308]',
-          'Qualified': 'bg-[#57ACAF]/10 text-[#57ACAF]',
-          'RFQ': 'bg-[#9333EA]/10 text-[#9333EA]',
-          'Closed': 'bg-[#D0342C]/10 text-[#D0342C]',
+        const colors: Record<string, string> = {
+          'New enquiry': 'bg-[#6F83A7]/10 text-[#6F83A7]',
+          New: 'bg-[#6F83A7]/10 text-[#6F83A7]',
+          'Tech pack / spec': 'bg-[#EAB308]/10 text-[#EAB308]',
+          Contacted: 'bg-[#EAB308]/10 text-[#EAB308]',
+          Sampling: 'bg-[#57ACAF]/10 text-[#57ACAF]',
+          Qualified: 'bg-[#57ACAF]/10 text-[#57ACAF]',
+          'Costing & quote': 'bg-[#9333EA]/10 text-[#9333EA]',
+          RFQ: 'bg-[#9333EA]/10 text-[#9333EA]',
+          'PO / onboarding': 'bg-[#D0342C]/10 text-[#D0342C]',
+          Closed: 'bg-[#D0342C]/10 text-[#D0342C]',
         };
-        return <Badge className={colors[value]}>{value}</Badge>;
+        return <Badge className={colors[value] || 'bg-white/10 text-white'}>{value}</Badge>;
       },
     },
   ];
 
   // Campaigns Columns
   const campaignsColumns: Column[] = [
-    { key: 'campaignId', label: 'Campaign ID', sortable: true },
-    { key: 'name', label: 'Name' },
+    { key: 'campaignId', label: 'Campaign ref', sortable: true },
+    { key: 'name', label: 'Outreach theme' },
     {
       key: 'status',
       label: 'Status',
@@ -513,11 +536,11 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
         return <Badge className={colors[value]}>{value}</Badge>;
       },
     },
-    { key: 'audience', label: 'Audience' },
-    { key: 'sendWindow', label: 'Send Window' },
+    { key: 'audience', label: 'Buyer segment' },
+    { key: 'sendWindow', label: 'Send window' },
     {
       key: 'conversionRate',
-      label: 'Conversion %',
+      label: 'Reply → RFQ %',
       sortable: true,
       render: (value) => <span className="text-[#57ACAF]">{value}%</span>,
     },
@@ -525,8 +548,8 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
   // Conversations Columns
   const conversationsColumns: Column[] = [
-    { key: 'contactName', label: 'Contact Name', sortable: true },
-    { key: 'company', label: 'Company' },
+    { key: 'contactName', label: 'Buyer contact', sortable: true },
+    { key: 'company', label: 'Buyer / org' },
     {
       key: 'channel',
       label: 'Channel',
@@ -551,19 +574,22 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
         );
       },
     },
-    { key: 'lastMessage', label: 'Last Message' },
+    { key: 'lastMessage', label: 'Last thread' },
     { key: 'timestamp', label: 'Time' },
     {
       key: 'intent',
-      label: 'Intent',
+      label: 'Topic',
       render: (value) => {
-        const colors: any = {
-          'Interest': 'bg-[#57ACAF]/10 text-[#57ACAF]',
+        const colors: Record<string, string> = {
+          Interest: 'bg-[#57ACAF]/10 text-[#57ACAF]',
           'Info Request': 'bg-[#EAB308]/10 text-[#EAB308]',
-          'RFQ': 'bg-[#9333EA]/10 text-[#9333EA]',
-          'Complaint': 'bg-[#D0342C]/10 text-[#D0342C]',
+          'Tech pack': 'bg-[#EAB308]/10 text-[#EAB308]',
+          Costing: 'bg-[#9333EA]/10 text-[#9333EA]',
+          RFQ: 'bg-[#9333EA]/10 text-[#9333EA]',
+          Compliance: 'bg-[#57ACAF]/10 text-[#57ACAF]',
+          Complaint: 'bg-[#D0342C]/10 text-[#D0342C]',
         };
-        return <Badge className={colors[value]}>{value}</Badge>;
+        return <Badge className={colors[value] || 'bg-white/10 text-white'}>{value}</Badge>;
       },
     },
   ];
@@ -711,10 +737,18 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
   const renderDashboard = () => (
     <>
+      {/* Module Setup Banner */}
+      {showSetupBanner && (
+        <ModuleSetupBanner
+          moduleName="Lead Management"
+          onSetupClick={() => setSetupWizardOpen(true)}
+        />
+      )}
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <KPICard
-          title="New Leads"
+          title="New buyer enquiries"
           value="48"
           change={15.3}
           changeLabel="vs last month"
@@ -722,29 +756,29 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
           trend="up"
         />
         <KPICard
-          title="Lead→RFQ Conversion"
+          title="Enquiry → costing"
           value="32%"
           change={4.2}
           icon={TrendingUp}
           trend="up"
         />
         <KPICard
-          title="Avg Response Time"
+          title="Avg. buyer reply"
           value="1.8 days"
           change={-8.5}
-          changeLabel="improvement"
+          changeLabel="faster"
           icon={Clock}
           trend="up"
         />
         <KPICard
-          title="High-fit Leads"
+          title="A-grade fit leads"
           value="15"
           change={12.5}
           icon={Target}
           trend="up"
         />
         <KPICard
-          title="Active Campaigns"
+          title="Active outreach"
           value="2"
           change={0}
           icon={Send}
@@ -777,28 +811,23 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Lead Conversion Funnel */}
         <div className="lg:col-span-2 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all duration-300">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-white mb-1">Lead Conversion Funnel</h3>
-              <p className="text-sm text-[#6F83A7]">Track pipeline progression & conversion rates</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="text-[#6F83A7] border-white/10 hover:bg-white/5 hover:border-[#57ACAF]/50 transition-all duration-180">
-                <Calendar className="w-4 h-4 mr-2" />
-                This Month
-              </Button>
-              <Button variant="outline" size="sm" className="text-[#6F83A7] border-white/10 hover:bg-white/5 hover:border-[#57ACAF]/50 transition-all duration-180">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
-            </div>
-          </div>
+          <GarmentsModuleDataToolbar
+            className="mb-6"
+            title="Apparel sourcing funnel"
+            subtitle="Enquiry through tech pack, sampling, costing, and PO — garment buyer journey"
+            onFilter={() => toast.info('Filter by season / category')}
+            onExport={() => toast.success('Preparing funnel export…')}
+            exportLabel="Export funnel (CSV)"
+            onRefresh={() => toast.success('Funnel refreshed')}
+            onAskMarbim={onAskMarbim}
+            askPrompt={MARBIM_PROMPTS.leadDashboard}
+          />
           
           <div className="space-y-6">
             {/* Overall Conversion Stats */}
             <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-br from-[#57ACAF]/10 to-transparent border border-[#57ACAF]/20 rounded-xl">
               <div className="text-center">
-                <div className="text-sm text-[#6F83A7] mb-1">Overall Conversion</div>
+                <div className="text-sm text-[#6F83A7] mb-1">Enquiry → PO win rate</div>
                 <div className="text-2xl text-[#57ACAF]">9.4%</div>
                 <div className="flex items-center justify-center gap-1 mt-1">
                   <TrendingUp className="w-3 h-3 text-green-400" />
@@ -806,7 +835,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 </div>
               </div>
               <div className="text-center border-l border-r border-white/10">
-                <div className="text-sm text-[#6F83A7] mb-1">Avg. Cycle Time</div>
+                <div className="text-sm text-[#6F83A7] mb-1">Avg. sampling → quote</div>
                 <div className="text-2xl text-[#EAB308]">14 days</div>
                 <div className="flex items-center justify-center gap-1 mt-1">
                   <TrendingUp className="w-3 h-3 text-green-400 rotate-180" />
@@ -814,7 +843,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm text-[#6F83A7] mb-1">Active Pipeline</div>
+                <div className="text-sm text-[#6F83A7] mb-1">Quoted FOB pipeline</div>
                 <div className="text-2xl text-white">$2.4M</div>
                 <div className="flex items-center justify-center gap-1 mt-1">
                   <TrendingUp className="w-3 h-3 text-green-400" />
@@ -935,7 +964,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 </div>
                 <div>
                   <p className="text-sm text-white">AI Insight</p>
-                  <p className="text-xs text-[#6F83A7]">Qualified → RFQ conversion dropped 5%. Focus on qualification criteria.</p>
+                  <p className="text-xs text-[#6F83A7]">Sampling → costing conversion softened: buyers waiting on lab dips and compliance packs.</p>
                 </div>
               </div>
               <Button 
@@ -949,11 +978,21 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
           </div>
         </div>
 
-        {/* AI Card */}
         <div className="space-y-4">
+          <GarmentsAISection
+            title="MARBIM — buyer development (apparel)"
+            description="Signals tuned for garment exporters: categories, MOQ, compliance, and sampling velocity."
+            bullets={[
+              'Outerwear enquiries from EU are clustering on recycled shell fabrics — prioritize lab dip capacity.',
+              'Denim pipeline stalled on wash approvals; nudge buyers with revised FOB bands by wash program.',
+              'GOTS / OEKO-TEX questions spiked 18% WoW — preload cert packs in replies.',
+            ]}
+            marbimPrompt={MARBIM_PROMPTS.leadTable}
+            onAskMarbim={onAskMarbim}
+          />
           <AICard
-            title="MARBIM Lead Insights"
-            marbimPrompt="Provide detailed lead intelligence including top prospects for RFQ requests this week, response time optimization strategies, and high-fit lead opportunities from all channels."
+            title="Pipeline actions"
+            marbimPrompt={MARBIM_PROMPTS.leadTable}
             onAskMarbim={onAskMarbim}
           >
             <div className="space-y-3">
@@ -961,16 +1000,16 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 <div className="flex items-start gap-3">
                   <Target className="w-4 h-4 text-[#57ACAF] flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <div className="text-sm text-white mb-1">Top 5 prospects likely to request an RFQ this week.</div>
-                    <Button 
-                      size="sm" 
+                    <div className="text-sm text-white mb-1">Five accounts most likely to move from sampling to costing this week.</div>
+                    <Button
+                      size="sm"
                       onClick={() => {
                         setCurrentView('leads-list');
-                        toast.success('Viewing high-fit prospects');
-                      }} 
+                        toast.success('Opening high-fit pipeline');
+                      }}
                       className="bg-[#EAB308] hover:bg-[#EAB308]/90 text-black mt-2"
                     >
-                      View Prospects
+                      View pipeline
                     </Button>
                   </div>
                 </div>
@@ -979,16 +1018,18 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 <div className="flex items-start gap-3">
                   <Clock className="w-4 h-4 text-[#EAB308] flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <div className="text-sm text-white mb-1">Average response time increased to 1.8 days — suggest new outreach timing.</div>
-                    <Button 
-                      size="sm" 
+                    <div className="text-sm text-white mb-1">
+                      Buyer replies averaging 1.8 days — stagger sends by time zone (EU AM / US PM).
+                    </div>
+                    <Button
+                      size="sm"
                       onClick={() => {
-                        setActiveSubPage('campaigns');
-                        toast.success('Opening campaign optimization');
-                      }} 
+                        setCurrentView('campaigns');
+                        toast.success('Opening campaigns');
+                      }}
                       className="bg-[#EAB308] hover:bg-[#EAB308]/90 text-black mt-2"
                     >
-                      Optimize Timing
+                      Tune campaigns
                     </Button>
                   </div>
                 </div>
@@ -997,17 +1038,19 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 <div className="flex items-start gap-3">
                   <Users className="w-4 h-4 text-[#6F83A7] flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <div className="text-sm text-white mb-1">High-fit lead detected from LinkedIn: Buyer at TrendWear UK.</div>
-                    <Button 
-                      size="sm" 
+                    <div className="text-sm text-white mb-1">
+                      High-fit lead: Nordic Outerwear AB — outerwear · recycled shells (FW26).
+                    </div>
+                    <Button
+                      size="sm"
                       onClick={() => {
-                        const leadRecord = allLeadsData[0]; // John Smith from TrendWear UK
+                        const leadRecord = allLeadsData[0];
                         handleRowClick(leadRecord);
-                        toast.success('Opening lead profile');
-                      }} 
+                        toast.success('Opening buyer contact');
+                      }}
                       className="bg-[#EAB308] hover:bg-[#EAB308]/90 text-black mt-2"
                     >
-                      View Lead Profile
+                      Open contact
                     </Button>
                   </div>
                 </div>
@@ -1019,7 +1062,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
       {/* Touchpoint Timeline */}
       <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-        <h3 className="text-white mb-6">Recent Touchpoint Timeline</h3>
+        <h3 className="text-white mb-6">Buyer outreach by channel (rolling 4 weeks)</h3>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={touchpointTimelineData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
@@ -1033,8 +1076,8 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               }}
             />
             <Bar dataKey="email" fill="#EAB308" radius={[8, 8, 0, 0]} name="Email" stackId="a" />
-            <Bar dataKey="linkedin" fill="#57ACAF" radius={[8, 8, 0, 0]} name="LinkedIn" stackId="a" />
-            <Bar dataKey="phone" fill="#6F83A7" radius={[8, 8, 0, 0]} name="Phone" stackId="a" />
+            <Bar dataKey="linkedin" fill="#57ACAF" radius={[8, 8, 0, 0]} name="LinkedIn / social" stackId="a" />
+            <Bar dataKey="phone" fill="#6F83A7" radius={[8, 8, 0, 0]} name="WhatsApp / voice" stackId="a" />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -1043,26 +1086,19 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
   const renderLeadsList = () => (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-white mb-1">Leads List</h2>
-          <p className="text-sm text-[#6F83A7]">Centralized, filterable table of all leads</p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="border-white/10">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
-          <Button 
-            className="bg-[#EAB308] hover:bg-[#EAB308]/90 text-black"
-            onClick={() => setAddLeadDrawerOpen(true)}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Lead
-          </Button>
-        </div>
-      </div>
+      <GarmentsModuleDataToolbar
+        className="mb-6"
+        title="Buyer lead directory"
+        subtitle="Filterable list of apparel buyer enquiries — category fit, pipeline stage, and engagement."
+        onAskMarbim={onAskMarbim}
+        askPrompt={MARBIM_PROMPTS.leadTable}
+        onFilter={() => toast.info('Filters — connect to saved views when wired to data')}
+        primaryAction={{
+          label: 'Add buyer lead',
+          icon: Plus,
+          onClick: () => setAddLeadDrawerOpen(true),
+        }}
+      />
 
       <Tabs key={`leads-list-${currentView}`} defaultValue="all-leads" className="space-y-6">
         {/* Tab Navigation */}
@@ -1073,50 +1109,50 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               className="relative flex items-center justify-center gap-2.5 py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] data-[state=active]:font-medium rounded-xl transition-all duration-300 group"
             >
               <Users className="w-4 h-4 group-data-[state=active]:scale-110 transition-transform" />
-              <span className="text-xs">All Leads</span>
+              <span className="text-xs">All leads</span>
             </TabsTrigger>
             <TabsTrigger 
               value="high-fit-leads" 
               className="relative flex items-center justify-center gap-2.5 py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] data-[state=active]:font-medium rounded-xl transition-all duration-300 group"
             >
               <Target className="w-4 h-4 group-data-[state=active]:scale-110 transition-transform" />
-              <span className="text-xs">High-Fit Leads</span>
+              <span className="text-xs">A-grade fit</span>
             </TabsTrigger>
             <TabsTrigger 
               value="cold-leads" 
               className="relative flex items-center justify-center gap-2.5 py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] data-[state=active]:font-medium rounded-xl transition-all duration-300 group"
             >
               <AlertTriangle className="w-4 h-4 group-data-[state=active]:scale-110 transition-transform" />
-              <span className="text-xs">Cold Leads</span>
+              <span className="text-xs">Dormant</span>
             </TabsTrigger>
             <TabsTrigger 
               value="ai-insights" 
               className="relative flex items-center justify-center gap-2.5 py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] data-[state=active]:font-medium rounded-xl transition-all duration-300 group"
             >
               <Sparkles className="w-4 h-4 group-data-[state=active]:scale-110 transition-transform" />
-              <span className="text-xs">AI Insights</span>
+              <span className="text-xs">MARBIM</span>
             </TabsTrigger>
           </TabsList>
         </div>
 
         <TabsContent value="all-leads" className="space-y-6">
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-            <h3 className="text-white mb-4">All Leads</h3>
+            <h3 className="text-white mb-4">All buyer leads</h3>
             <SmartTable
               columns={allLeadsColumns}
               data={leads}
-              searchPlaceholder="Search leads..."
+              searchPlaceholder="Search buyer, category, MOQ, market…"
               onRowClick={handleRowClick}
             />
           </div>
 
           <AICard
-            title="AI Auto-Scoring"
-            marbimPrompt="Explain how the AI auto-scoring system evaluates leads based on fit, intent, and engagement level. What are the key factors that determine a high score?"
+            title="Buyer lead auto-scoring"
+            marbimPrompt={MARBIM_PROMPTS.leadAutoScoring}
             onAskMarbim={onAskMarbim}
           >
             <div className="text-sm text-[#6F83A7]">
-              MARBIM auto-scores new leads based on fit, intent, and engagement level.
+              MARBIM scores enquiries by category fit, MOQ realism, compliance load, and buyer engagement.
             </div>
           </AICard>
         </TabsContent>
@@ -1124,25 +1160,25 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
         <TabsContent value="high-fit-leads" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-gradient-to-br from-[#57ACAF]/10 to-transparent border border-[#57ACAF]/20 rounded-xl p-6">
-              <div className="text-[#6F83A7] mb-2">High-Fit Leads</div>
+              <div className="text-[#6F83A7] mb-2">A-grade buyer leads</div>
               <div className="text-3xl text-white">{highFitLeadsData.length}</div>
             </div>
             <div className="bg-gradient-to-br from-[#EAB308]/10 to-transparent border border-[#EAB308]/20 rounded-xl p-6">
-              <div className="text-[#6F83A7] mb-2">Average Score</div>
+              <div className="text-[#6F83A7] mb-2">Avg. fit score</div>
               <div className="text-3xl text-[#EAB308]">86</div>
             </div>
             <div className="bg-gradient-to-br from-[#57ACAF]/10 to-transparent border border-[#57ACAF]/20 rounded-xl p-6">
-              <div className="text-[#6F83A7] mb-2">RFQ Probability</div>
+              <div className="text-[#6F83A7] mb-2">Likely → costing / sampling</div>
               <div className="text-3xl text-white">78%</div>
             </div>
           </div>
 
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-            <h3 className="text-white mb-4">High-Fit Leads (Score &gt; 80%)</h3>
+            <h3 className="text-white mb-4">A-grade fit (score &gt; 80%)</h3>
             <SmartTable
               columns={allLeadsColumns}
               data={highFitLeadsData}
-              searchPlaceholder="Search high-fit leads..."
+              searchPlaceholder="Search buyer, category, pipeline…"
               onRowClick={handleRowClick}
             />
           </div>
@@ -1152,14 +1188,14 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               <div className="flex items-start gap-3 flex-1">
                 <Target className="w-5 h-5 text-[#EAB308] flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-white mb-1">AI Next Best Action</div>
+                  <div className="text-white mb-1">Next best garment-sales action</div>
                   <div className="text-sm text-[#6F83A7]">
-                    MARBIM suggests next best actions — schedule meeting, send sample, or share catalog.
+                    MARBIM suggests tech pack sessions, lap dips, costing packs, or factory visits by buyer.
                   </div>
                 </div>
               </div>
               <MarbimAIButton
-                marbimPrompt="Based on these high-fit leads, what are the next best actions for each lead? Should we schedule meetings, send samples, or share catalogs?"
+                marbimPrompt={MARBIM_PROMPTS.leadHighFitNext}
                 onAskMarbim={onAskMarbim}
                 size="lg"
               />
@@ -1170,36 +1206,36 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
         <TabsContent value="cold-leads" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-gradient-to-br from-[#D0342C]/10 to-transparent border border-[#D0342C]/20 rounded-xl p-6">
-              <div className="text-[#6F83A7] mb-2">Cold Leads</div>
+              <div className="text-[#6F83A7] mb-2">Dormant buyers</div>
               <div className="text-3xl text-[#D0342C]">{coldLeadsData.length}</div>
             </div>
             <div className="bg-gradient-to-br from-[#EAB308]/10 to-transparent border border-[#EAB308]/20 rounded-xl p-6">
-              <div className="text-[#6F83A7] mb-2">No Activity (14+ days)</div>
+              <div className="text-[#6F83A7] mb-2">No thread (14+ days)</div>
               <div className="text-3xl text-white">8</div>
             </div>
             <div className="bg-gradient-to-br from-[#57ACAF]/10 to-transparent border border-[#57ACAF]/20 rounded-xl p-6">
-              <div className="text-[#6F83A7] mb-2">Reactivation Target</div>
+              <div className="text-[#6F83A7] mb-2">Season reactivation shortlist</div>
               <div className="text-3xl text-white">5</div>
             </div>
           </div>
 
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-            <h3 className="text-white mb-4">Cold Leads (No interaction &gt; 14 days)</h3>
+            <h3 className="text-white mb-4">Dormant (no interaction &gt; 14 days)</h3>
             <SmartTable
               columns={allLeadsColumns}
               data={coldLeadsData}
-              searchPlaceholder="Search cold leads..."
+              searchPlaceholder="Search dormant buyers…"
               onRowClick={handleRowClick}
             />
           </div>
 
           <AICard
-            title="AI Reactivation Campaign"
-            marbimPrompt="Suggest reactivation campaign strategies for cold leads. Which leads should be prioritized for reactivation and which should be archived?"
+            title="Season reactivation"
+            marbimPrompt={MARBIM_PROMPTS.leadColdReactivation}
             onAskMarbim={onAskMarbim}
           >
             <div className="text-sm text-[#6F83A7]">
-              MARBIM recommends reactivation campaign or archives low-potential leads automatically.
+              MARBIM proposes SS/FW hooks and compliance-led nudges, or archives low-fit accounts.
             </div>
           </AICard>
         </TabsContent>
@@ -1213,7 +1249,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                   <div className="text-white">Most Responsive Segment</div>
                 </div>
                 <p className="text-sm text-[#6F83A7] mb-4">
-                  Most responsive segment: EU sportswear buyers showing 45% higher engagement.
+                  EU sportswear buyers — 45% higher reply rate on capacity + certification-led outreach.
                 </p>
                 <Button variant="outline" className="w-full border-[#57ACAF]/30 text-[#57ACAF]">
                   <Eye className="w-4 h-4 mr-2" />
@@ -1227,13 +1263,13 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                   <div className="text-white">Trade Fair Performance</div>
                 </div>
                 <p className="text-sm text-[#6F83A7]">
-                  Leads from Trade Fair X showing 30% higher RFQ conversion than other sources.
+                  Intertextile / Première Vision contacts move to costing 30% faster than cold inbound.
                 </p>
               </div>
             </div>
 
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-              <h3 className="text-white mb-4">Lead Score Distribution</h3>
+              <h3 className="text-white mb-4">Buyer fit score distribution</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={[
                   { range: '0-40', count: 12 },
@@ -1263,29 +1299,22 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
   const renderCampaigns = () => (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-white mb-1">Campaigns</h2>
-          <p className="text-sm text-[#6F83A7]">Automate outreach and engagement with AI assistance</p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="border-white/10">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
-          <Button 
-            className="bg-[#EAB308] hover:bg-[#EAB308]/90 text-black"
-            onClick={() => {
-              setSelectedCampaign(null); // null means create new campaign
-              setCampaignDrawerOpen(true);
-            }}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Start Campaign
-          </Button>
-        </div>
-      </div>
+      <GarmentsModuleDataToolbar
+        className="mb-6"
+        title="Buyer outreach campaigns"
+        subtitle="Nurture apparel buyers with segmented sends — capacity, compliance, and season drops."
+        onAskMarbim={onAskMarbim}
+        askPrompt={MARBIM_PROMPTS.leadCampaignEngagement}
+        onFilter={() => toast.info('Campaign filters — wire to saved views')}
+        primaryAction={{
+          label: 'Start outreach',
+          icon: Plus,
+          onClick: () => {
+            setSelectedCampaign(null);
+            setCampaignDrawerOpen(true);
+          },
+        }}
+      />
 
       <Tabs key={`campaigns-${currentView}`} defaultValue="overview" className="space-y-6">
         {/* Tab Navigation */}
@@ -1303,14 +1332,14 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               className="relative flex items-center justify-center gap-2.5 py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] data-[state=active]:font-medium rounded-xl transition-all duration-300 group"
             >
               <Users className="w-4 h-4 group-data-[state=active]:scale-110 transition-transform" />
-              <span className="text-xs">Audience Builder</span>
+              <span className="text-xs">Buyer segments</span>
             </TabsTrigger>
             <TabsTrigger 
               value="message-composer" 
               className="relative flex items-center justify-center gap-2.5 py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] data-[state=active]:font-medium rounded-xl transition-all duration-300 group"
             >
               <Mail className="w-4 h-4 group-data-[state=active]:scale-110 transition-transform" />
-              <span className="text-xs">Message Composer</span>
+              <span className="text-xs">Email composer</span>
             </TabsTrigger>
             <TabsTrigger 
               value="schedule-send" 
@@ -1331,11 +1360,11 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
         <TabsContent value="overview" className="space-y-6">
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-            <h3 className="text-white mb-4">Campaign Overview</h3>
+            <h3 className="text-white mb-4">Active outreach</h3>
             <SmartTable
               columns={campaignsColumns}
               data={campaigns}
-              searchPlaceholder="Search campaigns..."
+              searchPlaceholder="Search theme, segment, send window…"
               onRowClick={handleRowClick}
             />
           </div>
@@ -1345,14 +1374,14 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               <div className="flex items-start gap-3 flex-1">
                 <Sparkles className="w-5 h-5 text-[#57ACAF] flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-white mb-1">AI Engagement Prediction</div>
+                  <div className="text-white mb-1">Send-window & hook suggestions</div>
                   <div className="text-sm text-[#6F83A7]">
-                    MARBIM predicts engagement time windows and suggests message variations for higher response rates.
+                    MARBIM proposes windows and message angles for apparel buyers (capacity, certs, FOB).
                   </div>
                 </div>
               </div>
               <MarbimAIButton
-                marbimPrompt="Analyze engagement time windows and suggest message variations for the current campaign to maximize response rates based on historical data and recipient behavior patterns."
+                marbimPrompt={MARBIM_PROMPTS.leadCampaignEngagement}
                 onAskMarbim={onAskMarbim}
                 size="lg"
               />
@@ -1370,8 +1399,8 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                     <Users className="w-4 h-4 text-[#57ACAF]" />
                   </div>
                   <div>
-                    <h3 className="text-white">Audience Segments</h3>
-                    <p className="text-xs text-[#6F83A7]">Targeted lead groups</p>
+                    <h3 className="text-white">Buyer segments</h3>
+                    <p className="text-xs text-[#6F83A7]">By category, season, region, and sustainability tier</p>
                   </div>
                 </div>
                 <motion.div whileHover={{ scale: 1.02, y: -1 }} whileTap={{ scale: 0.98 }}>
@@ -1502,7 +1531,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                       {onAskMarbim && (
                         <div className="ml-auto">
                           <MarbimAIButton
-                            marbimPrompt={`Analyze the "${segment.name}" audience segment with ${segment.count} leads and ${segment.engagement}% engagement. Provide recommendations for improving engagement, optimal campaign timing, and personalized outreach strategies.`}
+                            marbimPrompt={`${MARBIM_PROMPTS.leadAudienceBuilder} Deep-dive segment: "${segment.name}" (${segment.count} buyer contacts, ${segment.engagement}% engagement).`}
                             onAskMarbim={onAskMarbim}
                             size="sm"
                           />
@@ -1550,7 +1579,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 </div>
               </div>
               <MarbimAIButton
-                marbimPrompt="How does the AI audience generation work? What segments should I create for my lead nurturing campaigns based on behavior and attributes?"
+                marbimPrompt={MARBIM_PROMPTS.leadAudienceBuilder}
                 onAskMarbim={onAskMarbim}
                 size="lg"
               />
@@ -1687,14 +1716,14 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               <div className="flex items-start gap-3 flex-1">
                 <Mail className="w-5 h-5 text-[#57ACAF] flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-white mb-1">AI Message Drafting</div>
+                  <div className="text-white mb-1">Garment-buyer email drafting</div>
                   <div className="text-sm text-[#6F83A7]">
-                    MARBIM drafts email copies optimized for open and reply rates using historical performance data.
+                    MARBIM drafts buyer mails referencing tech packs, MOQ, lead times, and certifications.
                   </div>
                 </div>
               </div>
               <MarbimAIButton
-                marbimPrompt="How does MARBIM draft email copies optimized for open and reply rates? What historical performance data does it use to improve messaging?"
+                marbimPrompt={MARBIM_PROMPTS.leadMessageComposer}
                 onAskMarbim={onAskMarbim}
                 size="lg"
               />
@@ -1834,14 +1863,14 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               <div className="flex items-start gap-3 flex-1">
                 <Calendar className="w-5 h-5 text-[#EAB308] flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-white mb-1">AI Timing Optimization</div>
+                  <div className="text-white mb-1">Global send-time optimization</div>
                   <div className="text-sm text-[#6F83A7]">
-                    MARBIM optimizes timing and frequency for higher response probability based on recipient behavior patterns.
+                    MARBIM staggers sends for EU / US / Asia buyers around sampling and costing calls.
                   </div>
                 </div>
               </div>
               <MarbimAIButton
-                marbimPrompt="How does MARBIM optimize email timing and frequency for higher response probability? What recipient behavior patterns does it analyze to determine the best send times?"
+                marbimPrompt={MARBIM_PROMPTS.leadScheduleSend}
                 onAskMarbim={onAskMarbim}
                 size="lg"
               />
@@ -2076,14 +2105,14 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               <div className="flex items-start gap-3 flex-1">
                 <Activity className="w-5 h-5 text-[#57ACAF] flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-white mb-1">AI Performance Analysis</div>
+                  <div className="text-white mb-1">Outreach performance</div>
                   <div className="text-sm text-[#6F83A7]">
-                    MARBIM identifies best-performing messages and updates scoring model for future campaigns.
+                    MARBIM ranks hooks (capacity, compliance, price ladders) that move buyers to costing.
                   </div>
                 </div>
               </div>
               <MarbimAIButton
-                marbimPrompt="How does MARBIM analyze campaign performance and identify best-performing messages? How does it update the scoring model for future campaigns based on this analysis?"
+                marbimPrompt={MARBIM_PROMPTS.leadCampaignAnalytics}
                 onAskMarbim={onAskMarbim}
                 size="lg"
               />
@@ -2096,33 +2125,26 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
   const renderLeadInbox = () => (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-white mb-1">Lead Inbox</h2>
-          <p className="text-sm text-[#6F83A7]">Unified communication feed for all buyer interactions</p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="border-white/10">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
-          <Button 
-            className="bg-[#EAB308] hover:bg-[#EAB308]/90 text-black"
-            onClick={() => {
-              setEmailCompositionContext({
-                type: 'followup',
-                context: 'lead-inbox-followup',
-                subject: 'Following up on our previous conversation',
-              });
-              setEmailCompositionOpen(true);
-            }}
-          >
-            <Send className="w-4 h-4 mr-2" />
-            Send Follow-up
-          </Button>
-        </div>
-      </div>
+      <GarmentsModuleDataToolbar
+        className="mb-6"
+        title="Buyer conversation inbox"
+        subtitle="Email, WhatsApp, and LinkedIn threads — tagged by tech pack, costing, compliance, and sampling."
+        onAskMarbim={onAskMarbim}
+        askPrompt={MARBIM_PROMPTS.leadInboxIntent}
+        onFilter={() => toast.info('Inbox filters — wire to saved views')}
+        primaryAction={{
+          label: 'Send follow-up',
+          icon: Send,
+          onClick: () => {
+            setEmailCompositionContext({
+              type: 'followup',
+              context: 'lead-inbox-followup',
+              subject: 'Following up on our previous conversation',
+            });
+            setEmailCompositionOpen(true);
+          },
+        }}
+      />
 
       <Tabs key={`lead-inbox-${currentView}`} defaultValue="all-conversations" className="space-y-6">
         {/* Tab Navigation */}
@@ -2133,39 +2155,39 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               className="relative flex items-center justify-center gap-2.5 py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] data-[state=active]:font-medium rounded-xl transition-all duration-300 group"
             >
               <MessageSquare className="w-4 h-4 group-data-[state=active]:scale-110 transition-transform" />
-              <span className="text-xs">All Conversations</span>
+              <span className="text-xs">All threads</span>
             </TabsTrigger>
             <TabsTrigger 
               value="new-replies" 
               className="relative flex items-center justify-center gap-2.5 py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] data-[state=active]:font-medium rounded-xl transition-all duration-300 group"
             >
               <Mail className="w-4 h-4 group-data-[state=active]:scale-110 transition-transform" />
-              <span className="text-xs">New Replies</span>
+              <span className="text-xs">New replies</span>
             </TabsTrigger>
             <TabsTrigger 
               value="follow-ups" 
               className="relative flex items-center justify-center gap-2.5 py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] data-[state=active]:font-medium rounded-xl transition-all duration-300 group"
             >
               <Clock className="w-4 h-4 group-data-[state=active]:scale-110 transition-transform" />
-              <span className="text-xs">Follow-Ups</span>
+              <span className="text-xs">Follow-ups</span>
             </TabsTrigger>
             <TabsTrigger 
               value="ai-insights" 
               className="relative flex items-center justify-center gap-2.5 py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] data-[state=active]:font-medium rounded-xl transition-all duration-300 group"
             >
               <Sparkles className="w-4 h-4 group-data-[state=active]:scale-110 transition-transform" />
-              <span className="text-xs">AI Insights</span>
+              <span className="text-xs">MARBIM</span>
             </TabsTrigger>
           </TabsList>
         </div>
 
         <TabsContent value="all-conversations" className="space-y-6">
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-            <h3 className="text-white mb-4">All Conversations</h3>
+            <h3 className="text-white mb-4">All buyer threads</h3>
             <SmartTable
               columns={conversationsColumns}
               data={conversations}
-              searchPlaceholder="Search conversations..."
+              searchPlaceholder="Search buyer, org, topic…"
               onRowClick={handleRowClick}
             />
           </div>
@@ -2175,14 +2197,14 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               <div className="flex items-start gap-3 flex-1">
                 <Sparkles className="w-5 h-5 text-[#57ACAF] flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-white mb-1">AI Intent Tagging</div>
+                  <div className="text-white mb-1">Thread topic tagging</div>
                   <div className="text-sm text-[#6F83A7]">
-                    MARBIM tags message intent (Interest / Info Request / RFQ / Complaint) automatically for prioritization.
+                    MARBIM tags tech pack, costing, compliance, sampling, and complaints for merchandising vs costing triage.
                   </div>
                 </div>
               </div>
               <MarbimAIButton
-                marbimPrompt="How does MARBIM automatically tag message intent? What categories does it use (Interest, Info Request, RFQ, Complaint) and how does this help prioritize lead responses?"
+                marbimPrompt={MARBIM_PROMPTS.leadInboxIntent}
                 onAskMarbim={onAskMarbim}
                 size="lg"
               />
@@ -2234,7 +2256,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 <Badge className="bg-[#9333EA]/10 text-[#9333EA] border border-[#9333EA]/20">High</Badge>
               </div>
               <div className="text-2xl text-white mb-1">85%</div>
-              <div className="text-xs text-[#6F83A7]">Conversion Rate</div>
+              <div className="text-xs text-[#6F83A7]">→ costing / sampling</div>
             </div>
           </div>
 
@@ -2247,16 +2269,16 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 </div>
                 <div>
                   <h3 className="text-white mb-1 flex items-center gap-2">
-                    Priority Action Required
-                    <Badge className="bg-[#D0342C]/10 text-[#D0342C] border border-[#D0342C]/20 text-xs">1 Unassigned</Badge>
+                    Priority: costing thread
+                    <Badge className="bg-[#D0342C]/10 text-[#D0342C] border border-[#D0342C]/20 text-xs">1 unassigned</Badge>
                   </h3>
                   <p className="text-sm text-[#6F83A7]">
-                    High-intent RFQ reply from Emma Wilson needs immediate assignment and response within 2 hours.
+                    High-intent RFQ from Emma Wilson — assign to costing or merchandising within 2 hours.
                   </p>
                 </div>
               </div>
               <MarbimAIButton
-                marbimPrompt="Help me prioritize and assign this high-intent conversation to the right team member"
+                marbimPrompt={MARBIM_PROMPTS.leadInboxTriage}
                 onAskMarbim={onAskMarbim}
               />
             </div>
@@ -2275,7 +2297,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               <Button 
                 variant="outline"
                 className="border-white/10 text-white hover:bg-white/5 bg-[rgba(255,255,255,0)]"
-                onClick={() => onAskMarbim?.('Generate an AI-drafted reply for this high-intent RFQ conversation')}
+                onClick={() => onAskMarbim?.(MARBIM_PROMPTS.leadInboxDraftReply)}
               >
                 <Sparkles className="w-4 h-4 mr-2 text-[#EAB308]" />
                 AI Draft Reply
@@ -2409,14 +2431,14 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                   <Mail className="w-5 h-5 text-[#EAB308]" />
                 </div>
                 <div>
-                  <div className="text-white mb-2">AI Reply Assistance</div>
+                  <div className="text-white mb-2">Reply playbooks</div>
                   <div className="text-sm text-[#6F83A7] leading-relaxed">
-                    MARBIM analyzes conversation context, buyer history, and product interests to suggest personalized reply templates. It automatically detects intent (RFQ, Interest, Info Request) and assigns conversations to the most suitable team member based on expertise and workload.
+                    MARBIM uses thread topic, buyer history, and line mix to suggest replies and route to merchandising, costing, or compliance.
                   </div>
                 </div>
               </div>
               <MarbimAIButton
-                marbimPrompt="How does MARBIM suggest appropriate reply templates for incoming messages? How does it automatically assign conversations to the right owner?"
+                marbimPrompt={MARBIM_PROMPTS.leadInboxReplyPlaybooks}
                 onAskMarbim={onAskMarbim}
                 size="lg"
               />
@@ -2490,7 +2512,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 </div>
               </div>
               <MarbimAIButton
-                marbimPrompt="How does MARBIM's auto-nudge feature work? Show me the AI-drafted follow-up message"
+                marbimPrompt={MARBIM_PROMPTS.leadInboxFollowUpNudge}
                 onAskMarbim={onAskMarbim}
               />
             </div>
@@ -2524,7 +2546,11 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
               <Button 
                 variant="outline"
                 className="border-white/10 text-white hover:bg-white/5 bg-[rgba(255,255,255,0)]"
-                onClick={() => onAskMarbim?.('Generate an alternative follow-up message for Sophie')}
+                onClick={() =>
+                  onAskMarbim?.(
+                    `${MARBIM_PROMPTS.leadInboxFollowUpNudge} Regenerate a follow-up for Sophie Martin (sustainable outerwear buyer).`
+                  )
+                }
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Regenerate
@@ -2716,7 +2742,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 </div>
               </div>
               <MarbimAIButton
-                marbimPrompt="How does MARBIM's auto-nudge feature work? Explain the personalization process and approval workflow"
+                marbimPrompt={MARBIM_PROMPTS.leadInboxFollowUpNudge}
                 onAskMarbim={onAskMarbim}
                 size="lg"
               />
@@ -2863,7 +2889,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 <Button 
                   variant="outline"
                   className="w-full border-white/10 text-white hover:bg-white/5 bg-[rgba(255,255,255,0)]"
-                  onClick={() => onAskMarbim?.('Show me detailed WhatsApp engagement analytics and best practices')}
+                  onClick={() => onAskMarbim?.(MARBIM_PROMPTS.leadInboxChannelStats)}
                 >
                   <BarChart3 className="w-4 h-4 mr-2" />
                   View Channel Analytics
@@ -2977,7 +3003,7 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                     </div>
                   </div>
                   <MarbimAIButton
-                    marbimPrompt="Show me detailed sentiment analysis trends and how to address the 4% negative responses"
+                    marbimPrompt={MARBIM_PROMPTS.leadInboxSentimentTrends}
                     onAskMarbim={onAskMarbim}
                   />
                 </div>
@@ -2991,15 +3017,15 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                       <Target className="w-5 h-5 text-black" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-white mb-2">Conversation Intent Distribution</h4>
+                      <h4 className="text-white mb-2">Thread topic mix</h4>
                       <p className="text-sm text-[#6F83A7] mb-4">
-                        MARBIM automatically categorizes all conversations by intent to help prioritize responses.
+                        MARBIM tags buyer threads so costing, merchandising, and compliance queues stay clear.
                       </p>
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Badge className="bg-[#9333EA]/10 text-[#9333EA] border border-[#9333EA]/20">RFQ</Badge>
-                            <span className="text-sm text-[#6F83A7]">Direct purchase inquiries</span>
+                            <Badge className="bg-[#9333EA]/10 text-[#9333EA] border border-[#9333EA]/20">Costing / RFQ</Badge>
+                            <span className="text-sm text-[#6F83A7]">FOB, MOQ, payment terms</span>
                           </div>
                           <span className="text-white">35%</span>
                         </div>
@@ -3009,19 +3035,19 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Badge className="bg-[#57ACAF]/10 text-[#57ACAF] border border-[#57ACAF]/20">Interest</Badge>
-                            <span className="text-sm text-[#6F83A7]">Product exploration</span>
+                            <Badge className="bg-[#57ACAF]/10 text-[#57ACAF] border border-[#57ACAF]/20">Tech pack & sampling</Badge>
+                            <span className="text-sm text-[#6F83A7]">GSM, construction, lap dips</span>
                           </div>
-                          <span className="text-white">45%</span>
+                          <span className="text-white">40%</span>
                         </div>
                         <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                          <div className="h-full bg-gradient-to-r from-[#57ACAF] to-[#57ACAF]/60" style={{width: '45%'}} />
+                          <div className="h-full bg-gradient-to-r from-[#57ACAF] to-[#57ACAF]/60" style={{width: '40%'}} />
                         </div>
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Badge className="bg-[#EAB308]/10 text-[#EAB308] border border-[#EAB308]/20">Info Request</Badge>
-                            <span className="text-sm text-[#6F83A7]">General questions</span>
+                            <Badge className="bg-[#EAB308]/10 text-[#EAB308] border border-[#EAB308]/20">Compliance</Badge>
+                            <span className="text-sm text-[#6F83A7]">Certs, audits, restricted substances</span>
                           </div>
                           <span className="text-white">18%</span>
                         </div>
@@ -3031,19 +3057,19 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Badge className="bg-[#D0342C]/10 text-[#D0342C] border border-[#D0342C]/20">Complaint</Badge>
-                            <span className="text-sm text-[#6F83A7]">Issues & concerns</span>
+                            <Badge className="bg-[#D0342C]/10 text-[#D0342C] border border-[#D0342C]/20">Quality / delivery</Badge>
+                            <span className="text-sm text-[#6F83A7]">Shipment, defects, chargebacks</span>
                           </div>
-                          <span className="text-white">2%</span>
+                          <span className="text-white">7%</span>
                         </div>
                         <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                          <div className="h-full bg-gradient-to-r from-[#D0342C] to-[#D0342C]/60" style={{width: '2%'}} />
+                          <div className="h-full bg-gradient-to-r from-[#D0342C] to-[#D0342C]/60" style={{width: '7%'}} />
                         </div>
                       </div>
                     </div>
                   </div>
                   <MarbimAIButton
-                    marbimPrompt="Explain how MARBIM categorizes conversation intent and how this affects prioritization"
+                    marbimPrompt={MARBIM_PROMPTS.leadInboxInsights}
                     onAskMarbim={onAskMarbim}
                   />
                 </div>
@@ -3058,23 +3084,23 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
                 <Sparkles className="w-5 h-5 text-[#57ACAF]" />
               </div>
               <div className="flex-1">
-                <h4 className="text-white mb-2">This Week's AI Recommendations</h4>
+                <h4 className="text-white mb-2">This week — garment CRM</h4>
                 <ul className="space-y-2 text-sm text-[#6F83A7]">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-[#57ACAF] flex-shrink-0 mt-0.5" />
-                    <span>Prioritize WhatsApp for UK buyers (82% engagement vs 68% email)</span>
+                    <span>Route EU outerwear threads on WhatsApp first (faster tech pack clarifications).</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-[#57ACAF] flex-shrink-0 mt-0.5" />
-                    <span>Schedule follow-ups for Tuesday-Thursday 10-11 AM for optimal response</span>
+                    <span>Book costing reviews Tue–Thu 10–11 CET when buyers confirm wash programs.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-[#57ACAF] flex-shrink-0 mt-0.5" />
-                    <span>Include sustainability content in campaigns (2.3x faster conversion)</span>
+                    <span>Lead with GOTS / recycled content for NA sustainable capsules (shorter path to sampling).</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-[#57ACAF] flex-shrink-0 mt-0.5" />
-                    <span>Respond to RFQ-intent conversations within 2 hours (85% conversion rate)</span>
+                    <span>Answer RFQ / FOB threads within 2h to protect win rate on tight season gates.</span>
                   </li>
                 </ul>
               </div>
@@ -3087,17 +3113,18 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
   const renderAnalytics = () => (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-white mb-1">Analytics</h2>
-          <p className="text-sm text-[#6F83A7]">Campaign performance metrics and insights</p>
-        </div>
-      </div>
+      <GarmentsModuleDataToolbar
+        className="mb-6"
+        title="Lead & outreach analytics"
+        subtitle="Opens, clicks, and replies across buyer campaigns — tuned for apparel export teams."
+        onAskMarbim={onAskMarbim}
+        askPrompt={MARBIM_PROMPTS.leadAnalyticsOverview}
+        onExport={() => toast.success('Export queued')}
+      />
 
       {/* Campaign Analytics */}
       <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-6">
-        <h3 className="text-white mb-6">Campaign Performance Overview</h3>
+        <h3 className="text-white mb-6">Buyer campaign performance</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={campaignAnalyticsData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
@@ -3120,17 +3147,17 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
       {/* Detailed Analytics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-gradient-to-br from-[#EAB308]/10 to-transparent border border-[#EAB308]/20 rounded-xl p-6">
-          <div className="text-[#6F83A7] mb-2">Average Open Rate</div>
+          <div className="text-[#6F83A7] mb-2">Buyer email open rate</div>
           <div className="text-3xl text-white mb-2">68.3%</div>
           <div className="text-sm text-[#57ACAF]">+5.2% from last month</div>
         </div>
         <div className="bg-gradient-to-br from-[#57ACAF]/10 to-transparent border border-[#57ACAF]/20 rounded-xl p-6">
-          <div className="text-[#6F83A7] mb-2">Average CTR</div>
+          <div className="text-[#6F83A7] mb-2">Clicks (tech pack / portal)</div>
           <div className="text-3xl text-white mb-2">24.7%</div>
           <div className="text-sm text-[#57ACAF]">+3.1% from last month</div>
         </div>
         <div className="bg-gradient-to-br from-[#6F83A7]/10 to-transparent border border-[#6F83A7]/20 rounded-xl p-6">
-          <div className="text-[#6F83A7] mb-2">Conversion Rate</div>
+          <div className="text-[#6F83A7] mb-2">Reply → RFQ / costing</div>
           <div className="text-3xl text-white mb-2">17.9%</div>
           <div className="text-sm text-[#57ACAF]">+2.8% from last month</div>
         </div>
@@ -3138,12 +3165,12 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
       {/* AI Insights */}
       <AICard
-        title="AI Performance Analysis"
-        marbimPrompt="Analyze campaign performance trends and provide recommendations for improving engagement rates across different audience segments."
+        title="MARBIM performance readout"
+        marbimPrompt={MARBIM_PROMPTS.leadAnalyticsOverview}
         onAskMarbim={onAskMarbim}
       >
         <div className="text-sm text-[#6F83A7]">
-          MARBIM identifies best-performing messages and updates scoring model for future campaigns.
+          MARBIM highlights which hooks and segments move buyers from open to costing worksheet.
         </div>
       </AICard>
     </>
@@ -3173,11 +3200,11 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
     ];
 
     const viewLabels: { [key: string]: string } = {
-      'dashboard': 'Dashboard',
-      'campaigns': 'Campaigns',
-      'lead-inbox': 'Lead Inbox',
-      'directory': 'Directory',
-      'analytics': 'Analytics',
+      dashboard: 'Pipeline',
+      campaigns: 'Outreach',
+      'lead-inbox': 'Buyer inbox',
+      directory: 'Buyer directory',
+      analytics: 'Analytics',
     };
 
     if (currentView !== 'dashboard') {
@@ -3195,6 +3222,19 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
       >
         {renderContent()}
       </PageLayout>
+
+      {/* Setup Wizard */}
+      {setupWizardOpen && (
+        <LeadManagementSetup
+          onComplete={() => {
+            setSetupWizardOpen(false);
+            setShowSetupBanner(false);
+            toast.success('Lead Management module activated!');
+          }}
+          onClose={() => setSetupWizardOpen(false)}
+          onAskMarbim={onAskMarbim}
+        />
+      )}
 
       {/* Lead Detail Drawer - for Directory views */}
       {currentView === 'directory' && (
@@ -3264,7 +3304,12 @@ export function LeadManagement({ initialSubPage = 'dashboard', onAskMarbim, onNa
 
       {/* Segment Details Drawer */}
       <Sheet open={segmentDrawerOpen} onOpenChange={setSegmentDrawerOpen}>
-        <SheetContent className="w-full sm:max-w-3xl bg-gradient-to-br from-[#0a0f1a] via-[#101725] to-[#182336] border-l border-white/10 overflow-y-auto p-0 top-16 bottom-[72px]">
+        <SheetContent
+          className={cn(
+            'w-full sm:max-w-3xl bg-gradient-to-br from-[#0a0f1a] via-[#101725] to-[#182336] border-l border-white/10 overflow-y-auto p-0',
+            fabricSheetChromeClass(),
+          )}
+        >
           {selectedSegment && (
             <>
               {/* Close Button - Consistent Pattern */}

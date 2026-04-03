@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Lock, Eye, EyeOff, Building2, User, Phone, ArrowRight, Sparkles, Check } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Building2, User, Phone, ArrowRight, Check } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { toast } from 'sonner@2.0.3';
-import { projectId, publicAnonKey, supabaseUrl } from '../../utils/supabase/info';
+import { projectId, publicAnonKey } from '../../utils/supabase/info';
+import { fabricxaiLogoDark } from '../../config/branding';
 
 interface SignupProps {
   onSignup: (email: string, role: string, name: string, company: string) => void;
@@ -66,7 +67,7 @@ export function Signup({ onSignup, onNavigateToLogin }: SignupProps) {
 
     try {
       // Call Supabase signup endpoint
-      const response = await fetch(`${supabaseUrl}/functions/v1/make-server-1f923fcd/auth/signup`, {
+      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,16 +152,13 @@ export function Signup({ onSignup, onNavigateToLogin }: SignupProps) {
           className="hidden lg:flex flex-col justify-center space-y-8 px-8"
         >
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#57ACAF] to-[#EAB308] flex items-center justify-center shadow-lg shadow-[#57ACAF]/20">
-                <Sparkles className="w-7 h-7 text-white" />
-              </div>
-            </div>
-            <div>
-              <h1 className="text-3xl text-white tracking-tight">FabricXAI</h1>
-              <p className="text-sm text-[#6F83A7]">Garments Intelligent Platform</p>
-            </div>
+          <div className="flex flex-col gap-2">
+            <img
+              src={fabricxaiLogoDark}
+              alt="FabricXAI"
+              className="h-10 w-auto max-w-[220px] object-contain object-left"
+            />
+            <p className="text-sm text-[#6F83A7]">Garments Intelligent Platform</p>
           </div>
 
           {/* Value propositions */}
@@ -221,14 +219,13 @@ export function Signup({ onSignup, onNavigateToLogin }: SignupProps) {
         >
           <div className="bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl p-8 lg:p-10">
             {/* Mobile logo */}
-            <div className="lg:hidden flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#57ACAF] to-[#EAB308] flex items-center justify-center shadow-lg shadow-[#57ACAF]/20">
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl text-white tracking-tight">FabricXAI</h1>
-                <p className="text-xs text-[#6F83A7]">Garments Intelligent Platform</p>
-              </div>
+            <div className="lg:hidden flex flex-col gap-2 mb-8">
+              <img
+                src={fabricxaiLogoDark}
+                alt="FabricXAI"
+                className="h-9 w-auto max-w-[200px] object-contain object-left"
+              />
+              <p className="text-xs text-[#6F83A7]">Garments Intelligent Platform</p>
             </div>
 
             <div className="space-y-6">

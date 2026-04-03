@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Check, Upload, Mail, Target, Sparkles, ArrowRight, ArrowLeft,
   CheckCircle, AlertCircle, Loader2, FileText, Globe, 
-  Database, Settings, Link as LinkIcon, Zap, Brain, Rocket, ChevronRight, Lightbulb
+  Database, Settings, Link as LinkIcon, Zap, Brain, Rocket, ChevronRight, Lightbulb, X
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -13,6 +13,7 @@ import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { toast } from 'sonner';
+import marbimLogoMark from '../../assets/marbim-logo.png';
 
 interface LeadManagementOnboardingProps {
   onNavigate: (page: string) => void;
@@ -27,6 +28,9 @@ export function LeadManagementOnboarding({ onNavigate, onAskMarbim }: LeadManage
   const [emailProvider, setEmailProvider] = useState('');
   const [scoringPriority, setScoringPriority] = useState('');
   const [autoFollowup, setAutoFollowup] = useState('');
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const steps = [
     { number: 1, title: 'Upload Leads', icon: Upload, color: '#57ACAF', desc: 'Import your existing leads' },
@@ -62,6 +66,32 @@ export function LeadManagementOnboarding({ onNavigate, onAskMarbim }: LeadManage
   };
 
   const progress = ((currentStep - 1) / (steps.length - 1)) * 100;
+
+  const handleFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      setUploadedFiles((prev) => [...prev, ...fileArray]);
+      toast.success(`${fileArray.length} file(s) uploaded successfully`);
+    }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+    toast.success('File removed');
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0A0F1C] via-[#101725] to-[#0A0F1C] overflow-hidden">
@@ -383,14 +413,68 @@ export function LeadManagementOnboarding({ onNavigate, onAskMarbim }: LeadManage
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="border-2 border-dashed border-[#57ACAF]/30 rounded-2xl p-12 text-center hover:border-[#57ACAF]/50 transition-all bg-[#57ACAF]/5 group cursor-pointer"
+                          onClick={handleFileClick}
                         >
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            accept=".csv,.xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
+                            onChange={handleFileChange}
+                            className="hidden"
+                          />
                           <Upload className="w-16 h-16 text-[#57ACAF] mx-auto mb-6 group-hover:scale-110 transition-transform" />
                           <h3 className="text-white text-xl font-medium mb-3">Drop your file here</h3>
                           <p className="text-[#6F83A7] mb-6">or click to browse</p>
-                          <Button variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10">
+                          <Button 
+                            variant="outline" 
+                            className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFileClick();
+                            }}
+                          >
                             <FileText className="w-5 h-5 mr-2" />
                             Browse Files
                           </Button>
+                        </motion.div>
+                      )}
+
+                      {/* Uploaded Files Display */}
+                      {uploadedFiles.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="space-y-3"
+                        >
+                          <Label className="text-white text-lg">Uploaded Files ({uploadedFiles.length})</Label>
+                          {uploadedFiles.map((file, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="group flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all duration-180"
+                            >
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className="w-10 h-10 rounded-lg bg-[#57ACAF]/20 flex items-center justify-center flex-shrink-0">
+                                  <FileText className="w-5 h-5 text-[#57ACAF]" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-white font-medium truncate">{file.name}</p>
+                                  <p className="text-sm text-[#6F83A7]">{formatFileSize(file.size)}</p>
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveFile(index)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity text-white/60 hover:text-white hover:bg-white/10"
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </motion.div>
+                          ))}
                         </motion.div>
                       )}
 
@@ -662,7 +746,7 @@ export function LeadManagementOnboarding({ onNavigate, onAskMarbim }: LeadManage
                   <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-[#EAB308]/20 via-[#57ACAF]/20 to-[#EAB308]/20 border border-white/10">
                     {/* Logo Container with animated glow */}
                     <motion.div 
-                      className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-[#EAB308] via-[#57ACAF] to-[#EAB308] shadow-2xl flex items-center justify-center flex-shrink-0"
+                      className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-[#EAB308]/30 via-[#57ACAF]/30 to-[#EAB308]/30 border border-white/10 shadow-2xl flex items-center justify-center flex-shrink-0"
                       animate={{
                         boxShadow: [
                           '0 0 20px rgba(234, 179, 8, 0.3)',
@@ -676,22 +760,11 @@ export function LeadManagementOnboarding({ onNavigate, onAskMarbim }: LeadManage
                         ease: "easeInOut"
                       }}
                     >
-                      {/* MARBIM "M" Logo with AI Brain */}
-                      <div className="relative">
-                        <Brain className="w-7 h-7 text-white" strokeWidth={2.5} />
-                        <motion.div
-                          className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[#EAB308]"
-                          animate={{
-                            scale: [1, 1.2, 1],
-                            opacity: [1, 0.8, 1]
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                        />
-                      </div>
+                      <img
+                        src={marbimLogoMark}
+                        alt="MARBIM"
+                        className="w-10 h-10 object-contain"
+                      />
                     </motion.div>
                     
                     {/* MARBIM Branding */}

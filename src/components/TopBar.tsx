@@ -1,20 +1,12 @@
-import image_6223326a30b5e1f8adf02be924fdeab053459cce from 'figma:asset/6223326a30b5e1f8adf02be924fdeab053459cce.png';
-import newIconBefore from 'figma:asset/a8e2a19c1f1e7d9db4b3ab5b1f98e9c5a8dcd2be.png';
-import image_d6b7f80f7693c16e7001d9644e8e69a9830826a2 from 'figma:asset/d6b7f80f7693c16e7001d9644e8e69a9830826a2.png';
-import image_f72359dcb24a10e18b3ba63967c6fb99db2e7a10 from 'figma:asset/f72359dcb24a10e18b3ba63967c6fb99db2e7a10.png';
-import image_597a6f6fd0bc8e57b8ac3e371a8dbde74b6a3376 from 'figma:asset/597a6f6fd0bc8e57b8ac3e371a8dbde74b6a3376.png';
-import image_597a6f6fd0bc8e57b8ac3e371a8dbde74b6a3376 from 'figma:asset/597a6f6fd0bc8e57b8ac3e371a8dbde74b6a3376.png';
-import image_cf923d4a7d44d6033628185d429d82ed2e981dce from 'figma:asset/cf923d4a7d44d6033628185d429d82ed2e981dce.png';
-import image_6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe from 'figma:asset/6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe.png';
+import { useState } from 'react';
 import { 
   Search, Bell, Zap, User, Moon, Sun, ChevronDown, Plus, Calendar, 
   AlertCircle, Target, Download, Upload, Shield, FileText, Users,
   Send, Mail, FolderOpen, BarChart3, TrendingUp, Clipboard, DollarSign,
   Navigation, Eye, MessageSquare, Calculator, RefreshCw, CheckCircle,
   Globe, ShoppingBag, ExternalLink, Building2, Package, Truck, Store, Boxes,
-  LogOut, Settings as SettingsIcon
+  LogOut, Settings as SettingsIcon, Home, ClipboardCheck
 } from 'lucide-react';
-import { useState } from 'react';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -24,13 +16,13 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { Badge } from './ui/badge';
-import marbimImage from 'figma:asset/c71eace56b6821982da9dde651f71e10cdc44ea3.png';
-import quickActionIcon from 'figma:asset/31dc010aadfd329b50bb4ba98f777d3d534dbea2.png';
+import marbimLogoMark from '../assets/marbim-logo.png';
 import notificationIcon from 'figma:asset/597a6f6fd0bc8e57b8ac3e371a8dbde74b6a3376.png';
 import flagIcon from 'figma:asset/a35b854f5d98c8fe3cc892f6e31e562c8e01b16e.png';
 import icon1 from 'figma:asset/e8dadf97e0ab8f9f66c37c69734ae4d5f61a1cbf.png';
 import icon2 from 'figma:asset/85e66e6fc21f06c64b3ef63bf38bcadc72c6bbfb.png';
 import { toast } from 'sonner';
+import { DemoSessionTimer } from './DemoSessionTimer';
 
 interface TopBarProps {
   onOpenAIPanel: () => void;
@@ -38,9 +30,10 @@ interface TopBarProps {
   onNavigate?: (page: string) => void;
   user?: { name: string; email: string; company: string; role: string };
   onLogout?: () => void;
+  demoExpiryTime?: number | null;
 }
 
-export function TopBar({ onOpenAIPanel, currentPage = 'dashboard', onNavigate, user, onLogout }: TopBarProps) {
+export function TopBar({ onOpenAIPanel, currentPage = 'dashboard', onNavigate, user, onLogout, demoExpiryTime }: TopBarProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showPortals, setShowPortals] = useState(false);
   const [showMarketplace, setShowMarketplace] = useState(false);
@@ -212,13 +205,6 @@ export function TopBar({ onOpenAIPanel, currentPage = 'dashboard', onNavigate, u
           { label: 'Reassign Order', icon: RefreshCw, action: () => toast.success('Reassigning Order') },
           { label: 'View Delay Risks', icon: AlertCircle, action: () => toast.warning('Opening Delay Risk Report') },
         ];
-      case 'supplier-evaluation':
-        return [
-          { label: 'Add New Supplier', icon: Plus, action: () => toast.success('Add New Supplier clicked') },
-          { label: 'Schedule Audit', icon: Calendar, action: () => toast.success('Schedule Audit clicked') },
-          { label: 'Upload Documents', icon: Upload, action: () => toast.success('Upload Documents clicked') },
-          { label: 'Generate Report', icon: Download, action: () => toast.success('Generate Report clicked') },
-        ];
       case 'finance':
         return [
           { label: 'Upload Invoice', icon: Upload, action: () => toast.success('Upload Invoice clicked') },
@@ -291,12 +277,13 @@ export function TopBar({ onOpenAIPanel, currentPage = 'dashboard', onNavigate, u
         {/* Quick Actions */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="p-0 bg-transparent border-0 cursor-pointer transition-all duration-180 group">
-              <img 
-                src={quickActionIcon} 
-                alt="Quick Action" 
-                className="w-10 h-10 object-contain transition-transform duration-180 group-hover:scale-110"
-              />
+            <button
+              type="button"
+              title="Quick actions"
+              aria-label="Quick actions"
+              className="shrink-0 p-2 rounded-lg bg-gradient-to-br from-[#EAB308]/10 to-[#EAB308]/5 border border-[#EAB308]/20 hover:from-[#EAB308]/20 hover:to-[#EAB308]/10 transition-all duration-180 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EAB308]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0D1117]"
+            >
+              <Zap className="w-5 h-5 text-[#EAB308] transition-transform duration-180 group-hover:scale-110" strokeWidth={2.25} />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64 bg-[#0D1117] border-white/10">
@@ -326,17 +313,15 @@ export function TopBar({ onOpenAIPanel, currentPage = 'dashboard', onNavigate, u
 
       {/* Right Side Actions */}
       <div className="flex items-center gap-4 ml-8">
-        {/* Home Button */}
-        <button 
-          onClick={() => onNavigate?.('dashboard')}
-          className="p-0 bg-transparent border-0 cursor-pointer transition-all duration-180 hover:scale-110"
-          title="Go to Home"
+        {/* Home */}
+        <button
+          type="button"
+          onClick={() => onNavigate?.('/')}
+          className="relative shrink-0 p-2 rounded-lg bg-gradient-to-br from-[#57ACAF]/10 to-[#57ACAF]/5 border border-[#57ACAF]/20 hover:from-[#57ACAF]/20 hover:to-[#57ACAF]/10 transition-all duration-180 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#57ACAF]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0D1117]"
+          title="Home"
+          aria-label="Home"
         >
-          <img 
-            src={image_6223326a30b5e1f8adf02be924fdeab053459cce} 
-            alt="Home" 
-            className="w-6 h-6 object-contain"
-          />
+          <Home className="w-5 h-5 text-[#57ACAF] transition-transform duration-180 group-hover:scale-110" strokeWidth={2.25} />
         </button>
 
         {/* Portal Dropdown */}
@@ -452,12 +437,11 @@ export function TopBar({ onOpenAIPanel, currentPage = 'dashboard', onNavigate, u
         {/* Pending Approvals Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="relative group hover:scale-105 transition-transform">
-              <img 
-                src={image_d6b7f80f7693c16e7001d9644e8e69a9830826a2} 
-                alt="Pending Approvals" 
-                className="w-6 h-6 object-contain"
-              />
+            <button 
+              className="relative p-2 rounded-lg bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 hover:from-red-500/20 hover:to-red-500/10 transition-all duration-180 group"
+              title="Pending Approvals"
+            >
+              <ClipboardCheck className="w-5 h-5 text-red-400 transition-transform duration-180 group-hover:scale-110" />
               {/* Notification Badge */}
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center border border-[#182336] shadow-lg">
                 <span className="text-[9px] font-bold text-white">3</span>
@@ -582,30 +566,24 @@ export function TopBar({ onOpenAIPanel, currentPage = 'dashboard', onNavigate, u
         {/* Settings Button */}
         <button 
           onClick={() => onNavigate?.('settings')}
-          className="p-0 bg-transparent border-0 cursor-pointer transition-all duration-180 hover:scale-110"
-          title="Go to Settings"
+          className="p-2 rounded-lg bg-gradient-to-br from-[#6F83A7]/10 to-[#6F83A7]/5 border border-[#6F83A7]/20 hover:from-[#6F83A7]/20 hover:to-[#6F83A7]/10 transition-all duration-180 group"
+          title="Settings"
         >
-          <img 
-            src={image_cf923d4a7d44d6033628185d429d82ed2e981dce} 
-            alt="Settings" 
-            className="w-6 h-6 object-contain"
-          />
+          <SettingsIcon className="w-5 h-5 text-[#6F83A7] group-hover:text-white transition-colors" />
         </button>
 
         {/* Notifications Button with Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="relative p-0 bg-transparent border-0 cursor-pointer transition-all duration-180 group">
+            <button 
+              className="relative p-2 rounded-lg bg-gradient-to-br from-[#EAB308]/10 to-[#EAB308]/5 border border-[#EAB308]/20 hover:from-[#EAB308]/20 hover:to-[#EAB308]/10 transition-all duration-180 group"
+              title="Notifications"
+            >
+              <Bell className="w-5 h-5 text-[#EAB308] transition-transform duration-180 group-hover:scale-110" />
               {/* Notification Badge */}
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#EAB308] rounded-full flex items-center justify-center z-10 shadow-lg shadow-[#EAB308]/50">
-                <span className="text-xs font-bold text-black">5</span>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-[#EAB308] to-[#EAB308]/80 rounded-full flex items-center justify-center border border-[#182336] shadow-lg shadow-[#EAB308]/50">
+                <span className="text-[9px] font-bold text-black">5</span>
               </div>
-              
-              <img 
-                src={image_597a6f6fd0bc8e57b8ac3e371a8dbde74b6a3376} 
-                alt="Notifications" 
-                className="w-10 h-10 object-contain transition-transform duration-180 group-hover:scale-110"
-              />
             </button>
           </DropdownMenuTrigger>
           
@@ -822,6 +800,14 @@ export function TopBar({ onOpenAIPanel, currentPage = 'dashboard', onNavigate, u
         {/* Separator */}
         <div className="h-8 w-px bg-white/10"></div>
 
+        {/* Demo Session Timer - Only show for demo users */}
+        {demoExpiryTime && (
+          <>
+            <DemoSessionTimer expiryTime={demoExpiryTime} />
+            <div className="h-8 w-px bg-white/10"></div>
+          </>
+        )}
+
         {/* AI Assistant Button */}
         <div className="flex items-center gap-2">
           <button
@@ -830,8 +816,8 @@ export function TopBar({ onOpenAIPanel, currentPage = 'dashboard', onNavigate, u
             title="Marbim AI Assistant"
           >
             <img 
-              src={image_6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe} 
-              alt="Marbim AI" 
+              src={marbimLogoMark} 
+              alt="MARBIM" 
               className="w-8 h-8 object-contain transition-transform duration-180 group-hover:scale-110"
             />
           </button>

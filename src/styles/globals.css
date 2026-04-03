@@ -1,7 +1,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-size: 16px;
+  --font-size: 14px; /* Reduced from 16px for more compact UI */
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
   --card: #ffffff;
@@ -30,7 +30,7 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
+  --radius: 0.5rem; /* Reduced from 0.625rem */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: #030213;
@@ -125,67 +125,68 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-hidden;
   }
 }
 
 /**
- * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ * Base typography - Optimized for compact web layout
  */
 @layer base {
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
     h1 {
-      font-size: var(--text-2xl);
+      font-size: 1.5rem; /* Reduced */
       font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     h2 {
-      font-size: var(--text-xl);
+      font-size: 1.25rem; /* Reduced */
       font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     h3 {
-      font-size: var(--text-lg);
+      font-size: 1.125rem; /* Reduced */
       font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     h4 {
-      font-size: var(--text-base);
+      font-size: 1rem;
       font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     p {
-      font-size: var(--text-base);
+      font-size: 0.875rem; /* Reduced */
       font-weight: var(--font-weight-normal);
       line-height: 1.5;
     }
 
     label {
-      font-size: var(--text-base);
+      font-size: 0.875rem; /* Reduced */
       font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     button {
-      font-size: var(--text-base);
+      font-size: 0.875rem; /* Reduced */
       font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     input {
-      font-size: var(--text-base);
+      font-size: 0.875rem; /* Reduced */
       font-weight: var(--font-weight-normal);
-      line-height: 1.5;
+      line-height: 1.4;
     }
   }
 }
 
 html {
   font-size: var(--font-size);
+  overflow: hidden;
 }
 
 /* Modern Custom Scrollbar */
@@ -195,8 +196,8 @@ html {
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px; /* Reduced from 8px */
+  height: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -294,4 +295,66 @@ html {
 
 .compact-layout .h-96 {
   @apply h-80;
+}
+
+/* Production-Ready Web Layout Optimizations */
+.web-optimized {
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+/* Compact spacing utilities */
+.compact-spacing-x {
+  @apply px-4;
+}
+
+.compact-spacing-y {
+  @apply py-3;
+}
+
+/* Compact KPI cards */
+.kpi-card-compact {
+  @apply p-4;
+}
+
+.kpi-card-compact h3 {
+  font-size: 0.75rem;
+}
+
+.kpi-card-compact .metric {
+  font-size: 1.5rem;
+}
+
+/* Compact table styles */
+.table-compact {
+  font-size: 0.8125rem;
+}
+
+.table-compact th,
+.table-compact td {
+  @apply px-3 py-2;
+}
+
+.table-compact th {
+  @apply py-2;
+}
+
+/* Reduce section spacing */
+.section-compact {
+  @apply space-y-4;
+}
+
+/* Compact header heights */
+.header-compact {
+  @apply h-14;
+}
+
+/* Optimize chart heights for viewports */
+.chart-optimized {
+  @apply h-64;
+}
+
+/* Tab optimizations */
+.tabs-compact .tab {
+  @apply px-4 py-2 text-sm;
 }

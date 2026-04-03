@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -214,16 +215,16 @@ const buyerEngagementData = [
 ];
 
 export function CompanyProfile({ initialSubPage = 'overview', onAskMarbim, isAIPanelOpen }: CompanyProfileProps) {
-  const [currentView, setCurrentView] = useState(initialSubPage);
+  const routeSubpage = useRouteSubpage('overview', initialSubPage);
+  const [currentView, setCurrentView] = useState(routeSubpage);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [websitePublished, setWebsitePublished] = useState(true);
   const [catalogPreviewOpen, setCatalogPreviewOpen] = useState(false);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Catalog Columns
   const catalogColumns: Column[] = [

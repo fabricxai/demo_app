@@ -3,7 +3,7 @@
  * Manages user roles, permissions, and data access across all 14 modules
  */
 
-import { projectId, publicAnonKey, supabaseUrl } from './info';
+import { projectId, publicAnonKey } from './info';
 
 // ============================================
 // Role Definitions

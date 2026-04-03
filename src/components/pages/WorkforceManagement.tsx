@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -8,6 +9,8 @@ import { WorkflowStepper } from '../WorkflowStepper';
 import { MarbimAIButton } from '../MarbimAIButton';
 import { WorkerDetailDrawer } from '../WorkerDetailDrawer';
 import { AddWorkerDrawer } from '../AddWorkerDrawer';
+import { ModuleSetupBanner } from '../ModuleSetupBanner';
+import { WorkforceManagementSetup } from './WorkforceManagementSetup';
 import { 
   Users, Clock, Award, TrendingDown, BookOpen, UserCheck,
   ChevronDown, Plus, Download, Filter, Upload, Sparkles,
@@ -607,21 +610,23 @@ interface WorkforceManagementProps {
 }
 
 export function WorkforceManagement({ initialSubPage = 'dashboard', onAskMarbim }: WorkforceManagementProps) {
-  const [currentView, setCurrentView] = useState<string>(initialSubPage);
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
+  const [currentView, setCurrentView] = useState<string>(routeSubpage);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [workerDrawerOpen, setWorkerDrawerOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<any>(null);
   const [addWorkerDrawerOpen, setAddWorkerDrawerOpen] = useState(false);
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
+  const [isModuleSetup, setIsModuleSetup] = useState(false);
   
   // Filter states
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Filtered workers data
   const filteredWorkersData = workersData.filter((worker) => {
@@ -3167,35 +3172,55 @@ export function WorkforceManagement({ initialSubPage = 'dashboard', onAskMarbim 
 
   return (
     <>
-      <PageLayout
-        breadcrumbs={getBreadcrumbs()}
-        aiInsightsCount={8}
-      >
-        {renderContent()}
-      </PageLayout>
+      {showSetupWizard && (
+        <WorkforceManagementSetup
+          onComplete={() => {
+            setShowSetupWizard(false);
+            setIsModuleSetup(true);
+            toast.success('Workforce Management module configured successfully!');
+          }}
+          onClose={() => setShowSetupWizard(false)}
+          onAskMarbim={onAskMarbim || (() => {})}
+        />
+      )}
 
-      {/* Worker Detail Drawer */}
-      <WorkerDetailDrawer
-        open={workerDrawerOpen}
-        onClose={() => setWorkerDrawerOpen(false)}
-        worker={selectedWorker}
-        onAskMarbim={onAskMarbim}
-      />
+      {!showSetupWizard && (
+        <>
+          <PageLayout
+            breadcrumbs={getBreadcrumbs()}
+            aiInsightsCount={8}
+          >
+            {!isModuleSetup && currentView === 'dashboard' && (
+              <ModuleSetupBanner
+                moduleName="Workforce Management"
+                onSetupClick={() => setShowSetupWizard(true)}
+              />
+            )}
+            {renderContent()}
+          </PageLayout>
 
-      {/* Add Worker Drawer */}
-      <AddWorkerDrawer
-        isOpen={addWorkerDrawerOpen}
-        onClose={() => setAddWorkerDrawerOpen(false)}
-        onWorkerAdded={handleWorkerAdded}
-      />
+          {/* Worker Detail Drawer */}
+          <WorkerDetailDrawer
+            open={workerDrawerOpen}
+            onClose={() => setWorkerDrawerOpen(false)}
+            worker={selectedWorker}
+            onAskMarbim={onAskMarbim}
+          />
 
-      {/* Detail Drawer */}
-      <DetailDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        title={selectedRecord?.name || selectedRecord?.workerId || 'Details'}
-        recordId={selectedRecord?.id}
-      >
+          {/* Add Worker Drawer */}
+          <AddWorkerDrawer
+            isOpen={addWorkerDrawerOpen}
+            onClose={() => setAddWorkerDrawerOpen(false)}
+            onWorkerAdded={handleWorkerAdded}
+          />
+
+          {/* Detail Drawer */}
+          <DetailDrawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            title={selectedRecord?.name || selectedRecord?.workerId || 'Details'}
+            recordId={selectedRecord?.id}
+          >
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-white/5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -3279,7 +3304,9 @@ export function WorkforceManagement({ initialSubPage = 'dashboard', onAskMarbim 
             </div>
           </TabsContent>
         </Tabs>
-      </DetailDrawer>
+          </DetailDrawer>
+        </>
+      )}
     </>
   );
 }

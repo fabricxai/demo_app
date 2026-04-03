@@ -1,6 +1,3 @@
-import image_e60a26e7718629a129c4e7a854b1f876925c041e from 'figma:asset/e60a26e7718629a129c4e7a854b1f876925c041e.png';
-import image_e60a26e7718629a129c4e7a854b1f876925c041e from 'figma:asset/e60a26e7718629a129c4e7a854b1f876925c041e.png';
-import image_37c5cc972080f780d91709f9ee5699e2549830d5 from 'figma:asset/37c5cc972080f780d91709f9ee5699e2549830d5.png';
 import { 
   Users, TrendingUp, Package, DollarSign, Leaf, Settings as SettingsIcon,
   FileText, Calculator, Factory, ClipboardCheck, Truck, ChevronLeft, ChevronRight,
@@ -8,13 +5,12 @@ import {
   BarChart3, Send, Mail, FolderOpen, BookOpen, Clipboard, Globe, Sparkles,
   CreditCard, Wallet, CircleDollarSign, PiggyBank, Receipt, Ship, Navigation,
   AlertTriangle, MessageSquare, Calendar, Layers, Award, Recycle, Wrench, Activity,
-  Box, ArrowDownUp, ClipboardList, PackageSearch, RefreshCw, Building2, Image
+  Box, ArrowDownUp, ClipboardList, PackageSearch, RefreshCw, Building2, Image,
+  Home
 } from 'lucide-react';
 import { cn } from './ui/utils';
 import { useState } from 'react';
-import logoImage from 'figma:asset/e5bbcfaaf08b208473c04b5ae611365f951076ab.png';
-import logoCollapsed from 'figma:asset/6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe.png';
-import homeIcon from 'figma:asset/a0fd1a064dcc12c2e2c75b6ea79e51d94e7b9c31.png';
+import { fabricxaiLogoDark } from '../config/branding';
 
 interface SidebarProps {
   currentPage: string;
@@ -28,184 +24,194 @@ const navigationGroups = [
     title: 'CRM & Sales',
     items: [
       { 
-        id: 'lead-management', 
+        id: 'crm/leads', 
         label: 'Lead Management', 
         icon: Users,
         subPages: [
-          { id: 'lead-management-intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'lead-management/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'lead-management/campaigns', label: 'Campaigns', icon: Send },
-          { id: 'lead-management/lead-inbox', label: 'Lead Inbox', icon: Mail },
-          { id: 'lead-management/directory', label: 'Directory', icon: FolderOpen },
-          { id: 'lead-management/analytics', label: 'Analytics', icon: TrendingUp },
+          { id: 'modules/lead-management/intro', label: '🚀 Module Setup', icon: Sparkles },
+          { id: 'crm/leads/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'crm/leads/campaigns', label: 'Campaigns', icon: Send },
+          { id: 'crm/leads/lead-inbox', label: 'Lead Inbox', icon: Mail },
+          { id: 'crm/leads/directory', label: 'Directory', icon: FolderOpen },
+          { id: 'crm/leads/analytics', label: 'Analytics', icon: TrendingUp },
         ]
       },
       { 
-        id: 'buyer-management', 
+        id: 'crm/buyers', 
         label: 'Buyer Management', 
         icon: TrendingUp,
         subPages: [
           { id: 'modules/buyer-management/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'buyer-management/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'buyer-management/buyer-directory', label: 'Buyer Directory', icon: Users },
-          { id: 'buyer-management/feedback-issues', label: 'Feedback & Issues', icon: MessageSquare },
-        ]
-      },
-    ]
-  },
-  {
-    title: 'Production & Supply Chain',
-    items: [
-      { 
-        id: 'supplier-evaluation', 
-        label: 'Supplier Evaluation', 
-        icon: Package,
-        subPages: [
-          { id: 'modules/supplier-evaluation/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'supplier-evaluation/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'supplier-evaluation/supplier-directory', label: 'Supplier Directory', icon: Users },
-          { id: 'supplier-evaluation/rfq-board', label: 'RFQ Board', icon: Send },
-          { id: 'supplier-evaluation/samples', label: 'Samples', icon: Package },
+          { id: 'crm/buyers/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'crm/buyers/buyer-directory', label: 'Buyer Directory', icon: Users },
+          { id: 'crm/buyers/feedback-issues', label: 'Feedback & Issues', icon: MessageSquare },
         ]
       },
       { 
-        id: 'rfq-quotation', 
+        id: 'sales/rfq', 
         label: 'RFQ & Quotation', 
         icon: FileText,
         subPages: [
           { id: 'modules/rfq-quotation/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'rfq-quotation/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'rfq-quotation/rfq-inbox', label: 'RFQ Inbox', icon: FileText },
-          { id: 'rfq-quotation/quotation-builder', label: 'Quotation Builder', icon: Calculator },
-          { id: 'rfq-quotation/clarification-tracker', label: 'Clarification Tracker', icon: MessageSquare },
-        ]
-      },
-      { 
-        id: 'costing', 
-        label: 'Costing', 
-        icon: Calculator,
-        subPages: [
-          { id: 'modules/costing/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'costing/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'costing/cost-sheet-list', label: 'Cost Sheet List', icon: FileText },
-          { id: 'costing/scenarios', label: 'Scenarios', icon: Layers },
-          { id: 'costing/benchmarks', label: 'Benchmarks', icon: Award },
-        ]
-      },
-      { 
-        id: 'production-planning', 
-        label: 'Production Planning', 
-        icon: Factory,
-        subPages: [
-          { id: 'modules/production-planning/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'production-planning/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'production-planning/master-plan', label: 'Master Plan (Gantt)', icon: Calendar },
-          { id: 'production-planning/line-allocation', label: 'Line Allocation', icon: Factory },
-          { id: 'production-planning/ta-calendar', label: 'T&A Calendar', icon: Calendar },
-          { id: 'production-planning/materials-shortages', label: 'Materials & Shortages', icon: Package },
-          { id: 'production-planning/risk-ai', label: 'Risk & AI', icon: AlertTriangle },
-        ]
-      },
-      { 
-        id: 'workforce-management', 
-        label: 'Workforce Management', 
-        icon: Users,
-        subPages: [
-          { id: 'modules/workforce-management/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'workforce-management/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'workforce-management/roster-profiles', label: 'Roster & Profiles', icon: Users },
-          { id: 'workforce-management/attendance-leave', label: 'Attendance & Leave', icon: Calendar },
-          { id: 'workforce-management/skill-matrix', label: 'Skill Matrix', icon: Award },
-          { id: 'workforce-management/training-assessments', label: 'Training & Assessments', icon: BookOpen },
-          { id: 'workforce-management/welfare-safety', label: 'Welfare & Safety', icon: Shield },
-        ]
-      },
-      { 
-        id: 'machine-maintenance', 
-        label: 'Machine Maintenance', 
-        icon: Wrench,
-        subPages: [
-          { id: 'modules/machine-maintenance/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'machine-maintenance/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'machine-maintenance/machine-directory', label: 'Machine Directory', icon: SettingsIcon },
-          { id: 'machine-maintenance/maintenance-planner', label: 'Maintenance Planner', icon: Calendar },
-          { id: 'machine-maintenance/breakdowns', label: 'Breakdown & Repairs', icon: AlertTriangle },
-          { id: 'machine-maintenance/spare-parts', label: 'Spare Parts', icon: Package },
-          { id: 'machine-maintenance/ai-predictive', label: 'AI Predictive', icon: Activity },
-        ]
-      },
-      { 
-        id: 'inventory-management', 
-        label: 'Inventory Management', 
-        icon: Box,
-        subPages: [
-          { id: 'modules/inventory-management/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'inventory-management/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'inventory-management/material-master', label: 'Material Master', icon: PackageSearch },
-          { id: 'inventory-management/stock-ledger', label: 'Stock Ledger', icon: ArrowDownUp },
-          { id: 'inventory-management/warehouse', label: 'Warehouse & Location', icon: Box },
-          { id: 'inventory-management/material-requests', label: 'Material Requests', icon: ClipboardList },
-          { id: 'inventory-management/finished-goods', label: 'Finished Goods', icon: Package },
-          { id: 'inventory-management/reorder-forecasting', label: 'Reorder & Forecasting', icon: RefreshCw },
-        ]
-      },
-      { 
-        id: 'quality-control', 
-        label: 'Quality Control', 
-        icon: ClipboardCheck,
-        subPages: [
-          { id: 'modules/quality-control/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'quality-control/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'quality-control/inline-qc', label: 'Inline QC', icon: ClipboardCheck },
-          { id: 'quality-control/final-qc', label: 'Final QC & AQL', icon: CheckCircle },
-          { id: 'quality-control/lab-tests', label: 'Lab Tests', icon: Sparkles },
-          { id: 'quality-control/capa', label: 'CAPA', icon: AlertTriangle },
-          { id: 'quality-control/standards', label: 'Standards', icon: BookOpen },
-        ]
-      },
-      { 
-        id: 'shipment', 
-        label: 'Shipment', 
-        icon: Truck,
-        subPages: [
-          { id: 'modules/shipment/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'shipment/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'shipment/booking-manager', label: 'Booking Manager', icon: Calendar },
-          { id: 'shipment/live-tracking', label: 'Live Tracking', icon: Navigation },
-          { id: 'shipment/document-vault', label: 'Document Vault', icon: FileText },
-          { id: 'shipment/buyer-updates', label: 'Buyer Updates', icon: MessageSquare },
-          { id: 'shipment/exceptions', label: 'Exceptions', icon: AlertTriangle },
+          { id: 'sales/rfq/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'sales/rfq/rfq-inbox', label: 'RFQ Inbox', icon: FileText },
+          { id: 'sales/rfq/quotation-builder', label: 'Quotation Builder', icon: Calculator },
+          { id: 'sales/rfq/clarification-tracker', label: 'Clarification Tracker', icon: MessageSquare },
         ]
       },
     ]
   },
   {
-    title: 'Financial & Compliance',
+    title: 'Finance',
     items: [
       { 
-        id: 'finance', 
-        label: 'Finance', 
-        icon: DollarSign,
+        id: 'finance/costing', 
+        label: 'Costing', 
+        icon: Calculator,
         subPages: [
-          { id: 'modules/finance/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'finance/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'finance/accounts-receivable', label: 'Accounts Receivable', icon: CreditCard },
-          { id: 'finance/accounts-payable', label: 'Accounts Payable', icon: Wallet },
-          { id: 'finance/order-pl', label: 'Order P&L', icon: TrendingUp },
-          { id: 'finance/cash-flow', label: 'Cash Flow', icon: CircleDollarSign },
-          { id: 'finance/banking-lc', label: 'Banking & LC', icon: PiggyBank },
+          { id: 'modules/costing/intro', label: '🚀 Module Setup', icon: Sparkles },
+          { id: 'finance/costing/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'finance/costing/cost-sheet-list', label: 'Cost Sheet List', icon: FileText },
+          { id: 'finance/costing/scenarios', label: 'Scenarios', icon: Layers },
+          { id: 'finance/costing/benchmarks', label: 'Benchmarks', icon: Award },
         ]
       },
       { 
-        id: 'compliance-policy', 
+        id: 'finance/accounting', 
+        label: 'Accounting', 
+        icon: DollarSign,
+        subPages: [
+          { id: 'modules/finance/intro', label: '🚀 Module Setup', icon: Sparkles },
+          { id: 'finance/accounting/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'finance/accounting/accounts-receivable', label: 'Accounts Receivable', icon: CreditCard },
+          { id: 'finance/accounting/accounts-payable', label: 'Accounts Payable', icon: Wallet },
+          { id: 'finance/accounting/order-pl', label: 'Order P&L', icon: CircleDollarSign },
+          { id: 'finance/accounting/cash-flow', label: 'Cash Flow', icon: PiggyBank },
+          { id: 'finance/accounting/banking-lc', label: 'Banking & LC', icon: Receipt },
+        ]
+      },
+    ]
+  },
+  {
+    title: 'Operations',
+    items: [
+      { 
+        id: 'operations/production', 
+        label: 'Production Planning', 
+        icon: Factory,
+        subPages: [
+          { id: 'modules/production-planning/intro', label: '🚀 Module Setup', icon: Sparkles },
+          { id: 'operations/production/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'operations/production/master-plan', label: 'Master Plan', icon: Calendar },
+          { id: 'operations/production/line-allocation', label: 'Line Allocation', icon: Layers },
+          { id: 'operations/production/ta-calendar', label: 'T&A Calendar', icon: Calendar },
+          { id: 'operations/production/materials-shortages', label: 'Materials & Shortages', icon: AlertTriangle },
+          { id: 'operations/production/risk-ai', label: 'Risk & AI', icon: Sparkles },
+        ]
+      },
+      { 
+        id: 'operations/inventory', 
+        label: 'Inventory Management', 
+        icon: Box,
+        subPages: [
+          { id: 'modules/inventory-management/intro', label: '🚀 Module Setup', icon: Sparkles },
+          { id: 'operations/inventory/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'operations/inventory/material-master', label: 'Material Master', icon: ClipboardList },
+          { id: 'operations/inventory/stock-ledger', label: 'Stock Ledger', icon: BookOpen },
+          { id: 'operations/inventory/warehouse', label: 'Warehouse', icon: Building2 },
+          { id: 'operations/inventory/material-requests', label: 'Material Requests', icon: ArrowDownUp },
+          { id: 'operations/inventory/finished-goods', label: 'Finished Goods', icon: PackageSearch },
+          { id: 'operations/inventory/reorder-forecasting', label: 'Reorder & Forecasting', icon: RefreshCw },
+        ]
+      },
+      { 
+        id: 'operations/shipment', 
+        label: 'Shipment', 
+        icon: Truck,
+        subPages: [
+          { id: 'modules/shipment/intro', label: '🚀 Module Setup', icon: Sparkles },
+          { id: 'operations/shipment/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'operations/shipment/booking-manager', label: 'Booking Manager', icon: Clipboard },
+          { id: 'operations/shipment/live-tracking', label: 'Live Tracking', icon: Navigation },
+          { id: 'operations/shipment/document-vault', label: 'Document Vault', icon: FileText },
+          { id: 'operations/shipment/buyer-updates', label: 'Buyer Updates', icon: MessageSquare },
+          { id: 'operations/shipment/exceptions', label: 'Exceptions', icon: AlertTriangle },
+        ]
+      },
+    ]
+  },
+  {
+    title: 'Quality & Compliance',
+    items: [
+      { 
+        id: 'quality/qc', 
+        label: 'Quality Control', 
+        icon: ClipboardCheck,
+        subPages: [
+          { id: 'modules/quality-control/intro', label: '🚀 Module Setup', icon: Sparkles },
+          { id: 'quality/qc/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'quality/qc/inline-qc', label: 'Inline QC', icon: Activity },
+          { id: 'quality/qc/final-qc', label: 'Final QC', icon: CheckCircle },
+          { id: 'quality/qc/lab-tests', label: 'Lab Tests', icon: ClipboardCheck },
+          { id: 'quality/qc/capa', label: 'CAPA', icon: AlertTriangle },
+          { id: 'quality/qc/standards', label: 'Standards', icon: Award },
+        ]
+      },
+      { 
+        id: 'quality/compliance', 
         label: 'Compliance & Policy', 
         icon: Shield,
         subPages: [
           { id: 'modules/compliance-policy/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'compliance-policy/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { id: 'compliance-policy/policy-library', label: 'Policy Library', icon: BookOpen },
-          { id: 'compliance-policy/audits', label: 'Audits', icon: Clipboard },
-          { id: 'compliance-policy/regulatory-monitor', label: 'Regulatory Monitor', icon: Globe },
+          { id: 'quality/compliance/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'quality/compliance/policy-library', label: 'Policy Library', icon: BookOpen },
+          { id: 'quality/compliance/audits', label: 'Audits', icon: ClipboardCheck },
+          { id: 'quality/compliance/regulatory-monitor', label: 'Regulatory Monitor', icon: AlertTriangle },
+        ]
+      },
+    ]
+  },
+  {
+    title: 'Resources',
+    items: [
+      { 
+        id: 'resources/suppliers', 
+        label: 'Supplier Evaluation', 
+        icon: Package,
+        subPages: [
+          { id: 'modules/supplier-evaluation/intro', label: '🚀 Module Setup', icon: Sparkles },
+          { id: 'resources/suppliers/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'resources/suppliers/supplier-directory', label: 'Supplier Directory', icon: Users },
+          { id: 'resources/suppliers/rfq-board', label: 'RFQ Board', icon: Send },
+          { id: 'resources/suppliers/samples', label: 'Samples', icon: Package },
+        ]
+      },
+      { 
+        id: 'resources/machines', 
+        label: 'Machine Maintenance', 
+        icon: Wrench,
+        subPages: [
+          { id: 'modules/machine-maintenance/intro', label: '🚀 Module Setup', icon: Sparkles },
+          { id: 'resources/machines/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'resources/machines/machine-directory', label: 'Machine Directory', icon: Factory },
+          { id: 'resources/machines/maintenance-planner', label: 'Maintenance Planner', icon: Calendar },
+          { id: 'resources/machines/breakdowns', label: 'Breakdowns', icon: AlertTriangle },
+          { id: 'resources/machines/spare-parts', label: 'Spare Parts', icon: Package },
+          { id: 'resources/machines/ai-predictive', label: 'AI Predictive', icon: Sparkles },
+        ]
+      },
+      { 
+        id: 'resources/workforce', 
+        label: 'Workforce Management', 
+        icon: Users,
+        subPages: [
+          { id: 'modules/workforce-management/intro', label: '🚀 Module Setup', icon: Sparkles },
+          { id: 'resources/workforce/dashboard', label: 'Dashboard', icon: BarChart3 },
+          { id: 'resources/workforce/roster-profiles', label: 'Roster & Profiles', icon: Users },
+          { id: 'resources/workforce/attendance-leave', label: 'Attendance & Leave', icon: Calendar },
+          { id: 'resources/workforce/skill-matrix', label: 'Skill Matrix', icon: Award },
+          { id: 'resources/workforce/training-assessments', label: 'Training & Assessments', icon: BookOpen },
+          { id: 'resources/workforce/welfare-safety', label: 'Welfare & Safety', icon: Shield },
         ]
       },
     ]
@@ -224,32 +230,20 @@ const navigationGroups = [
           { id: 'sustainability/social', label: 'Social', icon: Users },
           { id: 'sustainability/governance', label: 'Governance', icon: Shield },
           { id: 'sustainability/waste-materials', label: 'Waste & Materials', icon: Recycle },
-          { id: 'sustainability/footprint-dpp', label: 'Footprint & DPP', icon: FileText },
-        ]
-      },
-    ]
-  },
-  {
-    title: 'Analytics & Insights',
-    items: [
-      { 
-        id: 'analytics', 
-        label: 'Analytics & Reporting', 
-        icon: BarChart3,
-        subPages: [
-          { id: 'modules/analytics/intro', label: '🚀 Module Setup', icon: Sparkles },
-          { id: 'analytics/role-dashboards', label: 'Role Dashboards', icon: Users },
-          { id: 'analytics/explainers', label: 'Explainers', icon: Sparkles },
-          { id: 'analytics/reports-library', label: 'Reports Library', icon: FileText },
-          { id: 'analytics/scheduled-reports', label: 'Scheduled Reports', icon: Calendar },
+          { id: 'sustainability/footprint-dpp', label: 'Footprint & DPP', icon: Globe },
         ]
       },
     ]
   },
 ];
 
+function pathKeyFromLocation(pathname: string): string {
+  return pathname.replace(/^\/+|\/+$/g, '');
+}
+
 export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse }: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const pathKey = pathKeyFromLocation(currentPage);
 
   const toggleExpand = (itemId: string) => {
     setExpandedItems(prev => 
@@ -260,9 +254,9 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
   };
 
   const isItemActive = (itemId: string, subPages?: any[]) => {
-    if (currentPage === itemId) return true;
+    if (pathKey === itemId) return true;
     if (subPages) {
-      return subPages.some(sub => currentPage === sub.id);
+      return subPages.some((sub) => pathKey === sub.id);
     }
     return false;
   };
@@ -275,68 +269,99 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
       )}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center justify-between px-6 border-b border-white/5">
-        {!isCollapsed && (
-          <div className="flex items-center gap-3">
-            <img 
-              src={logoImage} 
-              alt="AI Logo" 
-              className="h-8 w-auto object-contain"
-            />
-          </div>
+      <div
+        className={cn(
+          'border-b border-white/5 shrink-0 flex',
+          isCollapsed
+            ? 'min-h-16 flex-col items-center justify-center gap-1 px-2 py-2'
+            : 'h-16 items-center justify-between px-6'
         )}
-        <button
-          onClick={onToggleCollapse}
-          className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
-        >
-          {isCollapsed ? (
-            <img 
-              src={logoCollapsed} 
-              alt="Expand" 
-              className="w-5 h-5 object-contain"
+      >
+        {isCollapsed ? (
+          <>
+            <img
+              src={fabricxaiLogoDark}
+              alt="FabricXAI"
+              className="h-5 w-auto max-w-[56px] object-contain object-center"
             />
-          ) : (
-            <ChevronLeft className="w-4 h-4 text-[#6F83A7]" />
-          )}
-        </button>
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              aria-label="Expand sidebar"
+              className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4 text-[#6F83A7]" />
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-3 min-w-0">
+              <img
+                src={fabricxaiLogoDark}
+                alt="FabricXAI"
+                className="h-8 w-auto max-w-[148px] object-contain object-left"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              aria-label="Collapse sidebar"
+              className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4 text-[#6F83A7]" />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Dashboard Link */}
       <div className="px-3 py-4 border-b border-white/5 space-y-1">
         <button
-          onClick={() => onNavigate('dashboard')}
+          type="button"
+          onClick={() => onNavigate('/')}
           className={cn(
             "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-180",
-            currentPage === 'dashboard' 
-              ? "bg-[#EAB308]/10 text-[#EAB308] border-b-2 border-[#EAB308]" 
-              : "text-[#6F83A7] hover:bg-white/5 hover:text-white"
+            pathKey === ''
+              ? "bg-[#EAB308]/10 text-[#EAB308] border-b-2 border-[#EAB308]"
+              : "text-[#6F83A7] hover:bg-white/5 hover:text-white",
+            isCollapsed && "justify-center px-2"
           )}
+          title="Home"
+          aria-label="Home"
         >
-          <img src={image_e60a26e7718629a129c4e7a854b1f876925c041e} alt="Home" className="w-5 h-5 flex-shrink-0 object-contain" />
+          <Home className="w-5 h-5 flex-shrink-0" strokeWidth={pathKey === '' ? 2.25 : 2} />
           {!isCollapsed && <span>Home</span>}
         </button>
         <button
+          type="button"
           onClick={() => onNavigate('approve')}
           className={cn(
             "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-180",
-            currentPage === 'approve' 
-              ? "bg-[#EAB308]/10 text-[#EAB308] border-b-2 border-[#EAB308]" 
-              : "text-[#6F83A7] hover:bg-white/5 hover:text-white"
+            pathKey === 'approve'
+              ? "bg-[#EAB308]/10 text-[#EAB308] border-b-2 border-[#EAB308]"
+              : "text-[#6F83A7] hover:bg-white/5 hover:text-white",
+            isCollapsed && "justify-center px-2"
           )}
+          title="Approve"
+          aria-label="Approve"
         >
-          <CheckCircle className="w-5 h-5 flex-shrink-0" />
+          <CheckCircle className="w-5 h-5 flex-shrink-0" strokeWidth={pathKey === 'approve' ? 2.25 : 2} />
           {!isCollapsed && <span>Approve</span>}
         </button>
         <button
+          type="button"
           onClick={() => onNavigate('contacts')}
           className={cn(
             "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-180",
-            currentPage === 'contacts' 
-              ? "bg-[#EAB308]/10 text-[#EAB308] border-b-2 border-[#EAB308]" 
-              : "text-[#6F83A7] hover:bg-white/5 hover:text-white"
+            pathKey === 'contacts'
+              ? "bg-[#EAB308]/10 text-[#EAB308] border-b-2 border-[#EAB308]"
+              : "text-[#6F83A7] hover:bg-white/5 hover:text-white",
+            isCollapsed && "justify-center px-2"
           )}
+          title="Contacts"
+          aria-label="Contacts"
         >
-          <Contact className="w-5 h-5 flex-shrink-0" />
+          <Contact className="w-5 h-5 flex-shrink-0" strokeWidth={pathKey === 'contacts' ? 2.25 : 2} />
           {!isCollapsed && <span>Contacts</span>}
         </button>
       </div>
@@ -403,18 +428,18 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
                               onClick={() => onNavigate(subPage.id)}
                               className={cn(
                                 "group relative w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all duration-300 overflow-hidden",
-                                currentPage === subPage.id
+                                pathKey === subPage.id
                                   ? "bg-gradient-to-r from-[#EAB308]/15 to-[#EAB308]/5 text-[#EAB308] shadow-lg shadow-[#EAB308]/10" 
                                   : "text-[#6F83A7] hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 hover:text-white hover:shadow-md"
                               )}
                             >
                               {/* Active State Glow Effect */}
-                              {currentPage === subPage.id && (
+                              {pathKey === subPage.id && (
                                 <div className="absolute inset-0 bg-gradient-to-r from-[#EAB308]/20 via-transparent to-transparent animate-pulse" />
                               )}
                               
                               {/* Active State Left Border Accent */}
-                              {currentPage === subPage.id && (
+                              {pathKey === subPage.id && (
                                 <div className="absolute left-0 top-1 bottom-1 w-1 bg-gradient-to-b from-[#EAB308] to-[#EAB308]/50 rounded-r-full" />
                               )}
                               
@@ -422,7 +447,7 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
                               <SubIcon 
                                 className={cn(
                                   "w-4 h-4 flex-shrink-0 transition-all duration-300",
-                                  currentPage === subPage.id 
+                                  pathKey === subPage.id 
                                     ? "scale-110 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" 
                                     : "group-hover:scale-110 group-hover:rotate-6"
                                 )}
@@ -431,7 +456,7 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
                               {/* Label */}
                               <span className={cn(
                                 "text-left relative z-10 transition-all duration-300",
-                                currentPage === subPage.id ? "font-medium" : "group-hover:translate-x-0.5"
+                                pathKey === subPage.id ? "font-medium" : "group-hover:translate-x-0.5"
                               )}>
                                 {subPage.label}
                               </span>
@@ -454,10 +479,10 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
       {/* Company & Settings */}
       <div className="p-3 border-t border-white/5 space-y-2">
         <button
-          onClick={() => onNavigate('company-profile')}
+          onClick={() => onNavigate('company')}
           className={cn(
             "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-180",
-            currentPage === 'company-profile' 
+            pathKey === 'company' || pathKey.startsWith('company/')
               ? "bg-[#EAB308]/10 text-[#EAB308]" 
               : "text-[#6F83A7] hover:bg-white/5 hover:text-white"
           )}
@@ -470,7 +495,7 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
           onClick={() => onNavigate('settings')}
           className={cn(
             "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-180",
-            currentPage === 'settings' 
+            pathKey === 'settings' 
               ? "bg-[#EAB308]/10 text-[#EAB308]" 
               : "text-[#6F83A7] hover:bg-white/5 hover:text-white"
           )}

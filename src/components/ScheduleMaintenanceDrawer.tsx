@@ -1,4 +1,5 @@
 import { X, Calendar, Clock, User, AlertCircle, Wrench, FileText, Sparkles, Target, TrendingUp, Zap } from 'lucide-react';
+import { fabricRightDrawerClass } from './fabric/drawerChrome';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { motion, AnimatePresence } from 'motion/react';
@@ -46,7 +47,7 @@ export function ScheduleMaintenanceDrawer({ isOpen, onClose, onAskMarbim }: Sche
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-16 bottom-[72px] w-full max-w-[900px] bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 shadow-2xl z-50 flex flex-col"
+            className={fabricRightDrawerClass('max-w-[900px]')}
           >
             {/* Header */}
             <div className="relative border-b border-white/10 bg-gradient-to-r from-[#57ACAF]/5 via-transparent to-[#EAB308]/5">

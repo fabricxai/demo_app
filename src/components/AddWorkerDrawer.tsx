@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { fabricRightDrawerClassWithZ } from './fabric/drawerChrome';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, UserPlus, Upload, Briefcase, MapPin, Calendar,
@@ -254,7 +255,7 @@ export function AddWorkerDrawer({ isOpen, onClose, onWorkerAdded }: AddWorkerDra
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-16 bottom-[72px] w-full max-w-[900px] bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 shadow-2xl z-[101] flex flex-col"
+            className={fabricRightDrawerClassWithZ('max-w-[900px]', 'z-[101]')}
           >
             {/* Header */}
             <div className="relative border-b border-white/10 bg-gradient-to-r from-[#57ACAF]/5 via-transparent to-[#EAB308]/5">

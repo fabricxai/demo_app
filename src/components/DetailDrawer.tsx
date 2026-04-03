@@ -6,6 +6,7 @@ import {
   MessageSquare, Phone, Mail, Link as LinkIcon, Star, Building2
 } from 'lucide-react';
 import { ReactNode, useState } from 'react';
+import { FabricRightDrawerSurface } from './fabric/FabricRightDrawer';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { MarbimAIButton } from './MarbimAIButton';
@@ -91,7 +92,7 @@ export function DetailDrawer({
   subPage = 'Dashboard',
   currentTab,
   onNavigateToFullPage,
-  onAskMarbim
+  onAskMarbim,
 }: DetailDrawerProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -145,18 +146,7 @@ export function DetailDrawer({
       {isOpen && (
         <>
           {/* Drawer */}
-          <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ 
-              type: 'spring', 
-              damping: 30, 
-              stiffness: 300, 
-              duration: 0.3 
-            }}
-            className="fixed right-0 top-16 bottom-[72px] w-full max-w-[480px] bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 shadow-2xl z-50 flex flex-col overflow-hidden"
-          >
+          <FabricRightDrawerSurface maxWidth="max-w-[480px]" className="overflow-hidden">
             {/* Sleek Modern Header */}
             <div className="relative border-b border-white/10 bg-gradient-to-br from-[#101725] via-[#182336] to-[#101725] overflow-hidden">
               {/* Animated Background Pattern */}
@@ -728,7 +718,7 @@ export function DetailDrawer({
                 </motion.div>
               )}
             </div>
-          </motion.div>
+          </FabricRightDrawerSurface>
         </>
       )}
     </AnimatePresence>

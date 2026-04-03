@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -342,14 +343,14 @@ interface SustainabilityProps {
 }
 
 export function Sustainability({ initialSubPage = 'dashboard', onAskMarbim, onNavigateToPage }: SustainabilityProps) {
-  const [currentView, setCurrentView] = useState<string>(initialSubPage);
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
+  const [currentView, setCurrentView] = useState<string>(routeSubpage);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Energy Columns
   const energyColumns: Column[] = [

@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { cn } from './ui/utils';
+import { fabricSheetChromeClass } from './fabric/drawerChrome';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Sheet,
@@ -276,7 +278,10 @@ export const EmailCompositionDrawer = ({
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[900px] p-0 border-l border-white/10 bg-gradient-to-br from-[#101725] to-[#182336] overflow-hidden !top-16 !bottom-[72px]"
+        className={cn(
+          'w-full sm:max-w-[900px] p-0 border-l border-white/10 bg-gradient-to-br from-[#101725] to-[#182336] overflow-hidden',
+          fabricSheetChromeClass(),
+        )}
       >
         <SheetHeader className="px-6 py-4 border-b border-white/10 bg-gradient-to-r from-white/5 to-transparent">
           <div className="flex items-start justify-between">

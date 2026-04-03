@@ -3,7 +3,7 @@
  * Provides unified interface for KV store and vector database with RBAC
  */
 
-import { projectId, publicAnonKey, supabaseUrl } from './info';
+import { projectId, publicAnonKey } from './info';
 import { getCurrentSession, addMetadata, filterDataByAccess, getAuthHeaders } from './rbac';
 import * as vectorStore from './vector_store';
 
@@ -83,7 +83,7 @@ export async function storeData(
       storeInLocalStorage(key, enrichedData, module);
     } else {
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/make-server-1f923fcd/data/store`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/data/store`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -113,7 +113,7 @@ export async function getData(key: string): Promise<any> {
       return getFromLocalStorage(key, module);
     } else {
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/make-server-1f923fcd/data/get?key=${encodeURIComponent(key)}`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/data/get?key=${encodeURIComponent(key)}`,
         {
           method: 'GET',
           headers: getAuthHeaders(),
@@ -143,7 +143,7 @@ export async function getDataByModule(module: string): Promise<any[]> {
       return getAllFromLocalStorage(module);
     } else {
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/make-server-1f923fcd/data/by-module?module=${encodeURIComponent(module)}`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/data/by-module?module=${encodeURIComponent(module)}`,
         {
           method: 'GET',
           headers: getAuthHeaders(),
@@ -189,7 +189,7 @@ export async function updateData(
       storeInLocalStorage(key, enrichedData, module);
     } else {
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/make-server-1f923fcd/data/update`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/data/update`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -220,7 +220,7 @@ export async function deleteData(key: string, module?: string): Promise<void> {
       deleteFromLocalStorage(key, targetModule);
     } else {
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/make-server-1f923fcd/data/delete`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/data/delete`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -372,7 +372,7 @@ export async function batchStoreData(
       enrichedRecords.forEach(record => storeInLocalStorage(record.key, record.data, module));
     } else {
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/make-server-1f923fcd/data/batch-store`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/data/batch-store`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -422,7 +422,7 @@ export async function batchStoreVectorDocuments(
 export async function getCompanyAnalytics(): Promise<any> {
   try {
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/make-server-1f923fcd/analytics/company`,
+      `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/analytics/company`,
       {
         method: 'GET',
         headers: getAuthHeaders(),
@@ -448,7 +448,7 @@ export async function getCompanyAnalytics(): Promise<any> {
 export async function getModuleAnalytics(module: string): Promise<any> {
   try {
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/make-server-1f923fcd/analytics/module?module=${encodeURIComponent(module)}`,
+      `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/analytics/module?module=${encodeURIComponent(module)}`,
       {
         method: 'GET',
         headers: getAuthHeaders(),

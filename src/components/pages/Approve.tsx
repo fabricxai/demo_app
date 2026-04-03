@@ -8,17 +8,13 @@ import {
   CheckCircle, Clock, AlertTriangle, XCircle, Filter, 
   Download, TrendingUp, TrendingDown, DollarSign, FileText,
   Users, Calendar, Target, Sparkles, BarChart3, Award,
-  Eye, MessageSquare, Shield, Activity, Building2, ChevronDown
+  Eye, MessageSquare, Shield, Activity, Building2, ChevronDown,
+  RefreshCw, Zap, Send, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '../ui/collapsible';
 
 const approvalsData = [
   { 
@@ -249,7 +245,6 @@ export function Approve() {
   const [selectedApproval, setSelectedApproval] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeView, setActiveView] = useState('all');
-  const [aiInsightsOpen, setAiInsightsOpen] = useState(true);
 
   const handleRowClick = (row: any) => {
     setSelectedApproval(row);
@@ -336,124 +331,126 @@ export function Approve() {
         />
       </div>
 
-      {/* Quick Stats Banner */}
-      <div className="mb-6 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-white font-medium text-lg mb-1">Approval Overview</h3>
-            <p className="text-sm text-[#6F83A7]">Real-time approval metrics and insights</p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-white/10 text-white hover:bg-white/5 bg-[rgba(255,255,255,0)]"
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Filters
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-white/10 text-white hover:bg-white/5 bg-[rgba(255,255,255,0)]"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-5 gap-4">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-[#EAB308]/20 flex items-center justify-center">
-                <DollarSign className="w-4 h-4 text-[#EAB308]" />
-              </div>
-              <span className="text-xs text-[#6F83A7]">Total Value</span>
+      {/* AI Quick Actions Row */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <button
+          onClick={() => {
+            setActiveView('urgent');
+            toast.success('Showing urgent approvals');
+          }}
+          className="group relative overflow-hidden bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 rounded-xl p-6 hover:from-red-500/15 hover:to-red-500/10 transition-all duration-300 text-left"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-500/60 flex items-center justify-center shadow-lg shadow-red-500/30">
+              <AlertTriangle className="w-6 h-6 text-white" />
             </div>
-            <p className="text-xl font-medium text-white">${(totalPendingAmount / 1000).toFixed(0)}K</p>
-            <p className="text-xs text-[#6F83A7] mt-1">Pending</p>
+            <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+              {urgentCount} items
+            </Badge>
           </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-[#57ACAF]/20 flex items-center justify-center">
-                <Users className="w-4 h-4 text-[#57ACAF]" />
-              </div>
-              <span className="text-xs text-[#6F83A7]">Requestors</span>
+          <h3 className="text-white font-medium mb-2">Urgent Approvals</h3>
+          <p className="text-sm text-[#6F83A7] mb-3">
+            {urgentCount} requests need immediate attention
+          </p>
+          <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-red-400" />
+              <span className="text-red-400">
+                {approvalsData.filter(a => a.daysWaiting >= 3).length} overdue
+              </span>
             </div>
-            <p className="text-xl font-medium text-white">{new Set(approvalsData.map(a => a.requestedBy)).size}</p>
-            <p className="text-xs text-[#6F83A7] mt-1">Active users</p>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-[#57ACAF]/20 flex items-center justify-center">
-                <Building2 className="w-4 h-4 text-[#57ACAF]" />
-              </div>
-              <span className="text-xs text-[#6F83A7]">Departments</span>
+            <div className="flex items-center gap-1">
+              <DollarSign className="w-3.5 h-3.5 text-[#6F83A7]" />
+              <span className="text-[#6F83A7]">
+                ${(approvalsData
+                  .filter(a => a.status === 'Pending' && (a.priority === 'High' || a.daysWaiting >= 3))
+                  .reduce((sum, a) => {
+                    const amount = parseFloat(a.amount.replace(/[$,]/g, ''));
+                    return isNaN(amount) ? sum : sum + amount;
+                  }, 0) / 1000).toFixed(0)}K value
+              </span>
             </div>
-            <p className="text-xl font-medium text-white">{new Set(approvalsData.map(a => a.department)).size}</p>
-            <p className="text-xs text-[#6F83A7] mt-1">Active depts</p>
           </div>
+        </button>
 
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4 text-red-400" />
-              </div>
-              <span className="text-xs text-[#6F83A7]">Overdue</span>
+        <button
+          onClick={() => {
+            const highValueApprovals = approvalsData.filter(a => {
+              const amount = parseFloat(a.amount.replace(/[$,]/g, ''));
+              return a.status === 'Pending' && !isNaN(amount) && amount >= 100000;
+            });
+            if (highValueApprovals.length > 0) {
+              toast.success(`Showing ${highValueApprovals.length} high-value approvals`);
+            }
+          }}
+          className="group relative overflow-hidden bg-gradient-to-br from-[#EAB308]/10 to-[#EAB308]/5 border border-[#EAB308]/20 rounded-xl p-6 hover:from-[#EAB308]/15 hover:to-[#EAB308]/10 transition-all duration-300 text-left"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#EAB308] to-[#EAB308]/60 flex items-center justify-center shadow-lg shadow-[#EAB308]/30">
+              <DollarSign className="w-6 h-6 text-black" />
             </div>
-            <p className="text-xl font-medium text-white">{approvalsData.filter(a => a.daysWaiting >= 3).length}</p>
-            <p className="text-xs text-[#6F83A7] mt-1">&gt;3 days</p>
+            <Badge className="bg-[#EAB308]/20 text-[#EAB308] border-[#EAB308]/30">
+              {approvalsData.filter(a => {
+                const amount = parseFloat(a.amount.replace(/[$,]/g, ''));
+                return a.status === 'Pending' && !isNaN(amount) && amount >= 100000;
+              }).length} items
+            </Badge>
           </div>
+          <h3 className="text-white font-medium mb-2">High-Value Requests</h3>
+          <p className="text-sm text-[#6F83A7] mb-3">
+            Approvals over $100K threshold
+          </p>
+          <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-[#EAB308]" />
+              <span className="text-[#EAB308]">
+                AI Score: {Math.round(
+                  approvalsData
+                    .filter(a => {
+                      const amount = parseFloat(a.amount.replace(/[$,]/g, ''));
+                      return a.status === 'Pending' && !isNaN(amount) && amount >= 100000;
+                    })
+                    .reduce((sum, a) => sum + a.aiScore, 0) /
+                    approvalsData.filter(a => {
+                      const amount = parseFloat(a.amount.replace(/[$,]/g, ''));
+                      return a.status === 'Pending' && !isNaN(amount) && amount >= 100000;
+                    }).length || 0
+                )}%
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <TrendingUp className="w-3.5 h-3.5 text-[#6F83A7]" />
+              <span className="text-[#6F83A7]">Capital expense</span>
+            </div>
+          </div>
+        </button>
 
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-[#EAB308]/20 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-[#EAB308]" />
-              </div>
-              <span className="text-xs text-[#6F83A7]">AI Score</span>
+        <button
+          onClick={() => handleAskMarbim('Analyze my approval patterns and suggest workflow optimizations')}
+          className="group relative overflow-hidden bg-gradient-to-br from-[#57ACAF]/10 to-[#57ACAF]/5 border border-[#57ACAF]/20 rounded-xl p-6 hover:from-[#57ACAF]/15 hover:to-[#57ACAF]/10 transition-all duration-300 text-left"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#57ACAF] to-[#57ACAF]/60 flex items-center justify-center shadow-lg shadow-[#57ACAF]/30">
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <p className="text-xl font-medium text-white">
-              {Math.round(approvalsData.reduce((sum, a) => sum + a.aiScore, 0) / approvalsData.length)}
-            </p>
-            <p className="text-xs text-[#6F83A7] mt-1">Avg confidence</p>
+            <div className="w-2 h-2 rounded-full bg-[#57ACAF] animate-pulse"></div>
           </div>
-        </div>
+          <h3 className="text-white font-medium mb-2">AI Recommendations</h3>
+          <p className="text-sm text-[#6F83A7] mb-3">
+            {aiInsights.filter(i => i.priority === 'high').length} high-priority insights available
+          </p>
+          <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-1">
+              <Target className="w-3.5 h-3.5 text-[#57ACAF]" />
+              <span className="text-[#57ACAF]">92% accuracy</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-[#6F83A7]" />
+              <span className="text-[#6F83A7]">Save 1.5 days</span>
+            </div>
+          </div>
+        </button>
       </div>
-
-      {/* AI Insights & Quick Actions - Collapsible */}
-      <Collapsible open={aiInsightsOpen} onOpenChange={setAiInsightsOpen} className="mb-6">
-        <CollapsibleTrigger className="w-full">
-          <div className="flex items-center justify-between p-4 bg-gradient-to-br from-[#EAB308]/10 to-transparent border border-[#EAB308]/20 rounded-xl hover:bg-[#EAB308]/5 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#EAB308]/20 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-[#EAB308]" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-white font-medium">AI-Powered Insights & Quick Actions</h3>
-                <p className="text-xs text-[#6F83A7]">{aiInsights.length} insights available</p>
-              </div>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-[#6F83A7] transition-transform duration-300 ${aiInsightsOpen ? 'rotate-180' : ''}`} />
-          </div>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="mt-4">
-            <AICard
-              title=""
-              insights={aiInsights}
-              onActionClick={(id) => {
-                const insight = aiInsights.find(i => i.id === id);
-                if (insight) {
-                  handleAskMarbim(`Tell me more about: ${insight.title}`);
-                }
-              }}
-            />
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
 
       {/* Main Content - Full Width */}
       <div className="space-y-6">
@@ -511,11 +508,11 @@ export function Approve() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-white/10 text-white hover:bg-white/5"
-                  onClick={() => toast.info('Bulk actions coming soon')}
+                  className="border-white/10 text-white hover:bg-white/5 bg-[rgba(255,255,255,0)]"
+                  onClick={() => toast.info('Exporting data...')}
                 >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Bulk Approve
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
                 </Button>
                 <Button
                   size="sm"

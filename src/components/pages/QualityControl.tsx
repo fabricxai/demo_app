@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -376,11 +377,12 @@ interface QualityControlProps {
 }
 
 export function QualityControl({ initialSubPage = 'dashboard', onAskMarbim }: QualityControlProps) {
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
   // Database hook
   const db = useDatabase();
   
   // UI State
-  const [currentView, setCurrentView] = useState<string>(initialSubPage);
+  const [currentView, setCurrentView] = useState<string>(routeSubpage);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [workflowOpen, setWorkflowOpen] = useState(true);
@@ -409,10 +411,9 @@ export function QualityControl({ initialSubPage = 'dashboard', onAskMarbim }: Qu
     { label: 'Avg. AQL', value: avgAQL, icon: Target, color: '#57ACAF' },
   ];
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Load data from database on mount
   useEffect(() => {
@@ -449,10 +450,7 @@ export function QualityControl({ initialSubPage = 'dashboard', onAskMarbim }: Qu
   async function seedInitialQualityData() {
     const initialInspections = inlineInspectionsData.map(item => ({ ...item, type: 'inline-inspection' }));
     const initialAudits = aqlResultsData.map(item => ({ ...item, type: 'final-audit' }));
-    const initialDefects = defectsLogData.map(item => {
-      const { type: defectType, ...rest } = item;
-      return { ...rest, defectType, type: 'defect' };
-    });
+    const initialDefects = defectsLogData.map(item => ({ ...item, type: 'defect' }));
     const initialLabs = labResultsData.map(item => ({ ...item, type: 'lab-test' }));
     
     for (const inspection of initialInspections) {

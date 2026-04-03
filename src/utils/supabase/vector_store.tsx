@@ -3,7 +3,7 @@
  * Provides embedding generation and vector similarity search capabilities
  */
 
-import { projectId, publicAnonKey, supabaseUrl } from './info';
+import { projectId, publicAnonKey } from './info';
 
 export interface VectorDocument {
   id: string;
@@ -27,7 +27,7 @@ export interface VectorSearchResult {
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/make-server-1f923fcd/embeddings/generate`,
+      `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/embeddings/generate`,
       {
         method: 'POST',
         headers: {
@@ -57,7 +57,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 export async function storeDocument(doc: VectorDocument): Promise<void> {
   try {
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/make-server-1f923fcd/vectors/store`,
+      `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/vectors/store`,
       {
         method: 'POST',
         headers: {
@@ -90,7 +90,7 @@ export async function searchSimilar(
 ): Promise<VectorSearchResult[]> {
   try {
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/make-server-1f923fcd/vectors/search`,
+      `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/vectors/search`,
       {
         method: 'POST',
         headers: {
@@ -125,7 +125,7 @@ export async function searchSimilar(
 export async function deleteDocument(id: string): Promise<void> {
   try {
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/make-server-1f923fcd/vectors/delete`,
+      `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/vectors/delete`,
       {
         method: 'DELETE',
         headers: {
@@ -151,7 +151,7 @@ export async function deleteDocument(id: string): Promise<void> {
 export async function batchStoreDocuments(docs: VectorDocument[]): Promise<void> {
   try {
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/make-server-1f923fcd/vectors/batch-store`,
+      `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/vectors/batch-store`,
       {
         method: 'POST',
         headers: {

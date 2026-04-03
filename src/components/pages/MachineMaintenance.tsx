@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -9,6 +10,8 @@ import { AddMachineDrawer } from '../AddMachineDrawer';
 import { TaskDetailDrawer } from '../TaskDetailDrawer';
 import { ScheduleMaintenanceDrawer } from '../ScheduleMaintenanceDrawer';
 import { RepairDetailDrawer } from '../RepairDetailDrawer';
+import { ModuleSetupBanner } from '../ModuleSetupBanner';
+import { MachineMaintenanceSetup } from './MachineMaintenanceSetup';
 import { 
   Settings, TrendingDown, Clock, AlertTriangle, Wrench, Calendar, 
   FileText, Activity, Plus, Download, Filter, Search, Zap,
@@ -633,7 +636,8 @@ const sparePartsColumns: Column[] = [
 ];
 
 export function MachineMaintenance({ initialSubPage = 'dashboard', onAskMarbim, isAIPanelOpen }: MachineMaintenanceProps) {
-  const [currentView, setCurrentView] = useState(initialSubPage);
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
+  const [currentView, setCurrentView] = useState(routeSubpage);
   const [selectedMachine, setSelectedMachine] = useState<any>(null);
   const [machineDrawerOpen, setMachineDrawerOpen] = useState(false);
   const [addMachineDrawerOpen, setAddMachineDrawerOpen] = useState(false);
@@ -642,6 +646,8 @@ export function MachineMaintenance({ initialSubPage = 'dashboard', onAskMarbim, 
   const [scheduleDrawerOpen, setScheduleDrawerOpen] = useState(false);
   const [selectedRepair, setSelectedRepair] = useState<any>(null);
   const [repairDrawerOpen, setRepairDrawerOpen] = useState(false);
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
+  const [isModuleSetup, setIsModuleSetup] = useState(false);
   
   // Track active tabs for each view
   const [machineDirectoryTab, setMachineDirectoryTab] = useState('all-machines');
@@ -649,10 +655,9 @@ export function MachineMaintenance({ initialSubPage = 'dashboard', onAskMarbim, 
   const [breakdownsTab, setBreakdownsTab] = useState('active-breakdowns');
   const [sparePartsTab, setSparePartsTab] = useState('all-parts');
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Close drawer when AI panel opens
   useEffect(() => {
@@ -3949,53 +3954,75 @@ export function MachineMaintenance({ initialSubPage = 'dashboard', onAskMarbim, 
   };
 
   return (
-    <PageLayout
-      breadcrumbs={getBreadcrumbs()}
-      aiInsightsCount={3}
-    >
-      {renderContent()}
-
-      {/* Machine Detail Drawer */}
-      {selectedMachine && (
-        <MachineDetailDrawer
-          isOpen={machineDrawerOpen}
-          onClose={() => setMachineDrawerOpen(false)}
-          machine={selectedMachine}
-        />
-      )}
-
-      {/* Task Detail Drawer */}
-      {selectedTask && (
-        <TaskDetailDrawer
-          isOpen={taskDrawerOpen}
-          onClose={() => setTaskDrawerOpen(false)}
-          task={selectedTask}
-        />
-      )}
-
-      {/* Schedule Maintenance Drawer */}
-      <ScheduleMaintenanceDrawer
-        isOpen={scheduleDrawerOpen}
-        onClose={() => setScheduleDrawerOpen(false)}
-        onAskMarbim={onAskMarbim}
-      />
-
-      {/* Repair Detail Drawer */}
-      {selectedRepair && (
-        <RepairDetailDrawer
-          isOpen={repairDrawerOpen}
-          onClose={() => setRepairDrawerOpen(false)}
-          repair={selectedRepair}
+    <>
+      {showSetupWizard && (
+        <MachineMaintenanceSetup
+          onComplete={() => {
+            setShowSetupWizard(false);
+            setIsModuleSetup(true);
+            toast.success('Machine Maintenance module configured successfully!');
+          }}
+          onClose={() => setShowSetupWizard(false)}
           onAskMarbim={onAskMarbim}
         />
       )}
 
-      {/* Add Machine Drawer */}
-      <AddMachineDrawer
-        isOpen={addMachineDrawerOpen}
-        onClose={() => setAddMachineDrawerOpen(false)}
-        onMachineAdded={handleMachineAdded}
-      />
-    </PageLayout>
+      {!showSetupWizard && (
+        <PageLayout
+          breadcrumbs={getBreadcrumbs()}
+          aiInsightsCount={3}
+        >
+          {!isModuleSetup && currentView === 'dashboard' && (
+            <ModuleSetupBanner
+              moduleName="Machine Maintenance"
+              onSetupClick={() => setShowSetupWizard(true)}
+            />
+          )}
+          {renderContent()}
+
+          {/* Machine Detail Drawer */}
+          {selectedMachine && (
+            <MachineDetailDrawer
+              isOpen={machineDrawerOpen}
+              onClose={() => setMachineDrawerOpen(false)}
+              machine={selectedMachine}
+            />
+          )}
+
+          {/* Task Detail Drawer */}
+          {selectedTask && (
+            <TaskDetailDrawer
+              isOpen={taskDrawerOpen}
+              onClose={() => setTaskDrawerOpen(false)}
+              task={selectedTask}
+            />
+          )}
+
+          {/* Schedule Maintenance Drawer */}
+          <ScheduleMaintenanceDrawer
+            isOpen={scheduleDrawerOpen}
+            onClose={() => setScheduleDrawerOpen(false)}
+            onAskMarbim={onAskMarbim}
+          />
+
+          {/* Repair Detail Drawer */}
+          {selectedRepair && (
+            <RepairDetailDrawer
+              isOpen={repairDrawerOpen}
+              onClose={() => setRepairDrawerOpen(false)}
+              repair={selectedRepair}
+              onAskMarbim={onAskMarbim}
+            />
+          )}
+
+          {/* Add Machine Drawer */}
+          <AddMachineDrawer
+            isOpen={addMachineDrawerOpen}
+            onClose={() => setAddMachineDrawerOpen(false)}
+            onMachineAdded={handleMachineAdded}
+          />
+        </PageLayout>
+      )}
+    </>
   );
 }

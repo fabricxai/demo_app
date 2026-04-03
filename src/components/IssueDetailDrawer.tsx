@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { fabricRightDrawerClass } from './fabric/drawerChrome';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, AlertTriangle, Clock, User, Calendar, FileText, MessageSquare,
@@ -105,7 +106,7 @@ export function IssueDetailDrawer({ isOpen, onClose, issue, onAskMarbim }: Issue
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-16 bottom-[72px] w-full max-w-[1000px] bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 shadow-2xl z-50 flex flex-col"
+            className={fabricRightDrawerClass('max-w-[1000px]')}
           >
             {/* Header */}
             <div className="relative border-b border-white/10 bg-gradient-to-r from-white/5 via-transparent to-white/5">

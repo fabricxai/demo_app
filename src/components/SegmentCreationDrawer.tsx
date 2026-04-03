@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { cn } from './ui/utils';
+import { fabricSheetChromeClass } from './fabric/drawerChrome';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Sheet,
@@ -241,7 +243,10 @@ export function SegmentCreationDrawer({ open, onClose, onAskMarbim }: SegmentCre
       <SheetContent
         side="right"
         hideClose={true}
-        className="w-full sm:max-w-2xl p-0 bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 overflow-hidden top-16 bottom-[72px]"
+        className={cn(
+          'w-full sm:max-w-2xl p-0 bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 overflow-hidden',
+          fabricSheetChromeClass(),
+        )}
       >
         <div className="h-full flex flex-col">
           {/* Header */}

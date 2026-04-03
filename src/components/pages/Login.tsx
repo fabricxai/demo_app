@@ -17,9 +17,8 @@ import { toast } from "sonner@2.0.3";
 import {
   projectId,
   publicAnonKey,
-  supabaseUrl,
 } from "../../utils/supabase/info";
-import logoImage from "figma:asset/6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe.png";
+import { fabricxaiLogoDark } from "../../config/branding";
 
 interface LoginProps {
   onLogin: (
@@ -79,7 +78,7 @@ export function Login({
     try {
       // Call Supabase login endpoint
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/make-server-1f923fcd/auth/login`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-1f923fcd/auth/login`,
         {
           method: "POST",
           headers: {
@@ -163,25 +162,13 @@ export function Login({
           transition={{ duration: 0.6 }}
           className="hidden lg:flex flex-col justify-center space-y-8 px-8"
         >
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-14 h-14">
-                <img
-                  src={logoImage}
-                  alt="fabricXai"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            </div>
-            <div>
-              <h1 className="text-3xl text-white tracking-tight">
-                fabricXai
-              </h1>
-              <p className="text-sm text-[#6F83A7]">
-                Garments Intelligent Platform
-              </p>
-            </div>
+          <div className="flex flex-col gap-2">
+            <img
+              src={fabricxaiLogoDark}
+              alt="FabricXAI"
+              className="h-11 w-auto max-w-[280px] object-contain object-left"
+            />
+            <p className="text-sm text-[#6F83A7]">Garments Intelligent Platform</p>
           </div>
 
           {/* Value propositions */}
@@ -245,22 +232,13 @@ export function Login({
         >
           <div className="bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl p-8 lg:p-10">
             {/* Mobile logo */}
-            <div className="lg:hidden flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#57ACAF] to-[#EAB308] flex items-center justify-center shadow-lg shadow-[#57ACAF]/20 p-2">
-                <img
-                  src={logoImage}
-                  alt="fabricXai"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div>
-                <h1 className="text-2xl text-white tracking-tight">
-                  fabricXai
-                </h1>
-                <p className="text-xs text-[#6F83A7]">
-                  Garments Intelligent Platform
-                </p>
-              </div>
+            <div className="lg:hidden flex flex-col gap-2 mb-8">
+              <img
+                src={fabricxaiLogoDark}
+                alt="FabricXAI"
+                className="h-9 w-auto max-w-[240px] object-contain object-left"
+              />
+              <p className="text-xs text-[#6F83A7]">Garments Intelligent Platform</p>
             </div>
 
             <div className="space-y-6">

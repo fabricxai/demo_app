@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -169,14 +170,14 @@ interface AnalyticsProps {
 }
 
 export function Analytics({ initialSubPage = 'role-dashboards', onAskMarbim }: AnalyticsProps) {
-  const [subPage, setSubPage] = useState(initialSubPage);
+  const routeSubpage = useRouteSubpage('role-dashboards', initialSubPage);
+  const [subPage, setSubPage] = useState(routeSubpage);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
-  // Sync subPage with initialSubPage when it changes
   useEffect(() => {
-    setSubPage(initialSubPage);
-  }, [initialSubPage]);
+    setSubPage(routeSubpage);
+  }, [routeSubpage]);
 
   const handleRowClick = (item: any) => {
     setSelectedItem(item);

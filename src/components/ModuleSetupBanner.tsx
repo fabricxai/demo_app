@@ -9,12 +9,6 @@ interface ModuleSetupBannerProps {
 export function ModuleSetupBanner({ moduleName, onSetupClick }: ModuleSetupBannerProps) {
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-[#EAB308]/10 via-[#57ACAF]/10 to-[#EAB308]/5 border border-[#EAB308]/20 rounded-2xl p-6 mb-6">
-      {/* Animated background */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-0 w-40 h-40 bg-[#EAB308]/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-0 w-40 h-40 bg-[#57ACAF]/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-      </div>
-
       <div className="relative flex items-center justify-between gap-6">
         <div className="flex items-start gap-4 flex-1">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#EAB308] to-[#EAB308]/80 shadow-lg shadow-[#EAB308]/30 flex items-center justify-center flex-shrink-0">
@@ -33,10 +27,19 @@ export function ModuleSetupBanner({ moduleName, onSetupClick }: ModuleSetupBanne
 
         <Button
           onClick={onSetupClick}
-          className="bg-gradient-to-r from-[#EAB308] to-[#EAB308]/80 text-black hover:from-[#EAB308]/90 hover:to-[#EAB308]/70 shadow-lg shadow-[#EAB308]/20 px-6 py-5 rounded-xl flex-shrink-0 transition-all hover:scale-105"
+          className="relative bg-gradient-to-r from-[#EAB308] to-[#EAB308]/80 text-black hover:from-[#EAB308]/90 hover:to-[#EAB308]/70 shadow-lg shadow-[#EAB308]/30 px-8 py-6 rounded-xl flex-shrink-0 transition-all hover:scale-105 overflow-hidden group"
         >
-          <TrendingUp className="w-5 h-5 mr-2" />
-          Start Setup
+          {/* Animated shimmer effect */}
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          
+          {/* Pulsing glow for first-time users */}
+          <div className="absolute inset-0 bg-[#EAB308]/40 blur-xl animate-pulse" />
+          
+          <div className="relative flex items-center gap-2">
+            <Sparkles className="w-5 h-5 animate-pulse" />
+            <span className="font-semibold">Let MARBIM Guide You</span>
+            <Rocket className="w-5 h-5 ml-1" />
+          </div>
         </Button>
       </div>
     </div>

@@ -3,6 +3,12 @@
   import react from '@vitejs/plugin-react-swc';
   import path from 'path';
 
+  /** Figma export URLs → single on-disk asset so dev/build work without design handoff files */
+  const figmaPlaceholder = path.resolve(__dirname, './src/assets/placeholder.png');
+  const figmaAsset = (hash: string) => ({
+    [`figma:asset/${hash}.png`]: figmaPlaceholder,
+  });
+
   export default defineConfig({
     plugins: [react()],
     resolve: {
@@ -17,15 +23,18 @@
         'next-themes@0.4.6': 'next-themes',
         'lucide-react@0.487.0': 'lucide-react',
         'input-otp@1.4.2': 'input-otp',
-        'figma:asset/f72359dcb24a10e18b3ba63967c6fb99db2e7a10.png': path.resolve(__dirname, './src/assets/f72359dcb24a10e18b3ba63967c6fb99db2e7a10.png'),
-        'figma:asset/e60a26e7718629a129c4e7a854b1f876925c041e.png': path.resolve(__dirname, './src/assets/e60a26e7718629a129c4e7a854b1f876925c041e.png'),
-        'figma:asset/e5bbcfaaf08b208473c04b5ae611365f951076ab.png': path.resolve(__dirname, './src/assets/e5bbcfaaf08b208473c04b5ae611365f951076ab.png'),
-        'figma:asset/d6b7f80f7693c16e7001d9644e8e69a9830826a2.png': path.resolve(__dirname, './src/assets/d6b7f80f7693c16e7001d9644e8e69a9830826a2.png'),
-        'figma:asset/cf923d4a7d44d6033628185d429d82ed2e981dce.png': path.resolve(__dirname, './src/assets/cf923d4a7d44d6033628185d429d82ed2e981dce.png'),
-        'figma:asset/6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe.png': path.resolve(__dirname, './src/assets/6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe.png'),
-        'figma:asset/6223326a30b5e1f8adf02be924fdeab053459cce.png': path.resolve(__dirname, './src/assets/6223326a30b5e1f8adf02be924fdeab053459cce.png'),
-        'figma:asset/597a6f6fd0bc8e57b8ac3e371a8dbde74b6a3376.png': path.resolve(__dirname, './src/assets/597a6f6fd0bc8e57b8ac3e371a8dbde74b6a3376.png'),
-        'figma:asset/31dc010aadfd329b50bb4ba98f777d3d534dbea2.png': path.resolve(__dirname, './src/assets/31dc010aadfd329b50bb4ba98f777d3d534dbea2.png'),
+        ...figmaAsset('e60a26e7718629a129c4e7a854b1f876925c041e'),
+        ...figmaAsset('e5bbcfaaf08b208473c04b5ae611365f951076ab'),
+        ...figmaAsset('9b98f8fae594a5c7ded82dd6f481860709ab0a0c'),
+        ...figmaAsset('6b4cf6e4e338085095ecc8446ad35e7b17ea5cfe'),
+        ...figmaAsset('597a6f6fd0bc8e57b8ac3e371a8dbde74b6a3376'),
+        ...figmaAsset('31dc010aadfd329b50bb4ba98f777d3d534dbea2'),
+        ...figmaAsset('c71eace56b6821982da9dde651f71e10cdc44ea3'),
+        ...figmaAsset('a35b854f5d98c8fe3cc892f6e31e562c8e01b16e'),
+        ...figmaAsset('e8dadf97e0ab8f9f66c37c69734ae4d5f61a1cbf'),
+        ...figmaAsset('85e66e6fc21f06c64b3ef63bf38bcadc72c6bbfb'),
+        ...figmaAsset('37c5cc972080f780d91709f9ee5699e2549830d5'),
+        ...figmaAsset('a0fd1a064dcc12c2e2c75b6ea79e51d94e7b9c31'),
         'embla-carousel-react@8.6.0': 'embla-carousel-react',
         'cmdk@1.1.1': 'cmdk',
         'class-variance-authority@0.7.1': 'class-variance-authority',

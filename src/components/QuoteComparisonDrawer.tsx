@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { fabricRightDrawerClass } from './fabric/drawerChrome';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, FileText, DollarSign, Clock, Award, TrendingUp, AlertCircle, Download, CheckCircle, Sparkles, BarChart3, PieChart, ArrowUpRight, ArrowDownRight, Minus, Upload, Paperclip, File, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
@@ -89,7 +90,7 @@ export const QuoteComparisonDrawer: React.FC<QuoteComparisonDrawerProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed top-16 bottom-[72px] right-0 w-full max-w-[1200px] bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 shadow-2xl z-50 flex flex-col"
+            className={fabricRightDrawerClass('max-w-[1200px]')}
           >
             {/* Header */}
             <div className="relative px-8 py-6 border-b border-white/10 bg-gradient-to-r from-[#57ACAF]/5 via-transparent to-[#EAB308]/5">

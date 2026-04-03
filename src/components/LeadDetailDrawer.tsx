@@ -33,6 +33,8 @@ import {
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import { cn } from './ui/utils';
+import { fabricSheetChromeClass } from './fabric/drawerChrome';
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from './ui/sheet';
 import { ScrollArea } from './ui/scroll-area';
 import { Progress } from './ui/progress';
@@ -211,7 +213,10 @@ export function LeadDetailDrawer({
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[900px] p-0 bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10"
+        className={cn(
+          'w-full sm:max-w-[900px] p-0 bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10',
+          fabricSheetChromeClass(),
+        )}
       >
         {/* Accessibility - Screen reader only */}
         <SheetTitle className="sr-only">

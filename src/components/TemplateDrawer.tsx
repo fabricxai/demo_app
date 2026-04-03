@@ -1,4 +1,6 @@
 import { motion } from 'motion/react';
+import { cn } from './ui/utils';
+import { fabricSheetChromeClass } from './fabric/drawerChrome';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
@@ -94,7 +96,12 @@ export function TemplateDrawer({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-3xl bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 overflow-y-auto p-0 top-16 bottom-[72px]">
+      <SheetContent
+        className={cn(
+          'w-full sm:max-w-3xl bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 overflow-y-auto p-0',
+          fabricSheetChromeClass(),
+        )}
+      >
         <>
           {/* Close Button */}
           <Button

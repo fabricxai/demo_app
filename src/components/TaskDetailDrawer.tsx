@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { fabricRightDrawerClass } from './fabric/drawerChrome';
 import { X, Wrench, Clock, CheckCircle2, Sparkles, AlertTriangle, Calendar, User, MapPin, FileText, Settings, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import { ScrollArea } from './ui/scroll-area';
@@ -60,7 +61,7 @@ export function TaskDetailDrawer({ isOpen, onClose, task }: TaskDetailDrawerProp
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-      className="fixed top-16 bottom-[72px] right-0 w-full max-w-[1000px] bg-gradient-to-br from-[#101725] to-[#182336] border-l border-white/10 shadow-2xl z-50 flex flex-col"
+      className={fabricRightDrawerClass('max-w-[1000px]')}
     >
       {/* Header */}
       <div className="relative border-b border-white/10 bg-gradient-to-r from-[#57ACAF]/5 via-transparent to-[#EAB308]/5">

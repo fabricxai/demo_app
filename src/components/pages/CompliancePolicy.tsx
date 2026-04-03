@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -175,14 +176,14 @@ interface CompliancePolicyProps {
 }
 
 export function CompliancePolicy({ initialSubPage = 'dashboard', onAskMarbim, onNavigateToPage }: CompliancePolicyProps) {
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [subPage, setSubPage] = useState(initialSubPage);
+  const [subPage, setSubPage] = useState(routeSubpage);
 
-  // Sync subPage with initialSubPage when it changes
   useEffect(() => {
-    setSubPage(initialSubPage);
-  }, [initialSubPage]);
+    setSubPage(routeSubpage);
+  }, [routeSubpage]);
 
   const handleRowClick = (item: any) => {
     setSelectedItem(item);

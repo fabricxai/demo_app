@@ -1,11 +1,13 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, Mic, Paperclip, Sparkles, FileText, BarChart3, AlertCircle, File, Image as ImageIcon, Plus, History, Clock, MessageSquare, Trash2, TrendingUp, DollarSign, CheckCircle, XCircle, ArrowRight, Brain, Zap, Table as TableIcon, LineChart, Activity } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { cn } from './ui/utils';
+import { fabricRightDrawerClass } from './fabric/drawerChrome';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { ScrollArea } from './ui/scroll-area';
 import { toast } from 'sonner';
-import marbimAILogo from 'figma:asset/e5bbcfaaf08b208473c04b5ae611365f951076ab.png';
+import marbimAILogo from '../assets/marbim-logo.png';
 import {
   LineChart as RechartsLine,
   Line,
@@ -26,6 +28,13 @@ interface AIAssistantPanelProps {
   onClose: () => void;
   initialPrompt?: string;
   currentModule?: string;
+  /** On small screens, span full width over main content */
+  fullBleed?: boolean;
+  /**
+   * Desktop: render in-flow beside main so height matches module header + main only
+   * (below TopBar, above footer). Omit fixed viewport positioning.
+   */
+  docked?: boolean;
 }
 
 interface AttachedFile {
@@ -232,6 +241,26 @@ const moduleConfig: Record<string, {
       "Generate daily executive brief"
     ]
   },
+  'inventory-management': {
+    name: 'Inventory',
+    color: '#57ACAF',
+    quickPrompts: [
+      "Flag SKUs below safety stock",
+      "Explain WIP variance by line",
+      "Suggest reorders for next 2 weeks",
+      "Which fabrics are slow-moving?"
+    ]
+  },
+  'machine-maintenance': {
+    name: 'Machine maintenance',
+    color: '#57ACAF',
+    quickPrompts: [
+      "List machines due for PM this week",
+      "Predict downtime risk by line",
+      "Summarize open work orders",
+      "Spare parts below minimum?"
+    ]
+  },
   'settings': {
     name: 'System & Settings',
     color: '#6F83A7',
@@ -244,7 +273,14 @@ const moduleConfig: Record<string, {
   }
 };
 
-export function AIAssistantPanel({ isOpen, onClose, initialPrompt, currentModule = 'dashboard' }: AIAssistantPanelProps) {
+export function AIAssistantPanel({
+  isOpen,
+  onClose,
+  initialPrompt,
+  currentModule = 'dashboard',
+  fullBleed,
+  docked = false,
+}: AIAssistantPanelProps) {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -870,14 +906,23 @@ export function AIAssistantPanel({ isOpen, onClose, initialPrompt, currentModule
         <>
           {/* Panel - slide from right with 300ms */}
           <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
+            initial={docked ? { opacity: 0, x: 24 } : { x: '100%' }}
+            animate={docked ? { opacity: 1, x: 0 } : { x: 0 }}
+            exit={docked ? { opacity: 0, x: 24 } : { x: '100%' }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="fixed right-0 top-16 bottom-[72px] w-full max-w-[680px] z-50 flex flex-col p-1 overflow-hidden"
+            className={
+              fullBleed
+                ? 'fixed right-0 z-50 flex flex-col p-1 overflow-hidden top-0 bottom-0 left-0 w-full max-w-none'
+                : docked
+                  ? cn(
+                      'h-full min-h-0 w-[min(680px,100vw)] shrink-0 flex flex-col p-1 overflow-hidden z-10',
+                      'border-l border-white/10 bg-gradient-to-br from-[#101725] to-[#182336] shadow-2xl',
+                    )
+                  : cn(fabricRightDrawerClass('max-w-[680px]'), 'p-1 overflow-hidden')
+            }
           >
             {/* Glowing yellow border wrapper */}
-            <div className="relative h-full w-full rounded-lg overflow-hidden">
+            <div className="relative h-full min-h-0 w-full rounded-lg overflow-hidden">
               {/* Animated gradient border */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#EAB308] via-[#EAB308]/60 to-[#EAB308] rounded-lg opacity-80" />
               
@@ -885,11 +930,11 @@ export function AIAssistantPanel({ isOpen, onClose, initialPrompt, currentModule
               <div className="absolute inset-0 bg-gradient-to-br from-[#EAB308]/40 via-transparent to-[#EAB308]/40 rounded-lg blur-sm" />
               
               {/* Main content container with inner padding */}
-              <div className="relative h-full w-full m-[2px] bg-gradient-to-br from-[#1a1f2e] to-[#252b3b] shadow-2xl rounded-lg flex flex-col overflow-hidden">
+              <div className="relative h-full min-h-0 w-full m-[2px] bg-gradient-to-br from-[#1a1f2e] to-[#252b3b] shadow-2xl rounded-lg flex flex-col overflow-hidden">
                 {/* Shadow overlay for depth */}
                 <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(234,179,8,0.15)] pointer-events-none rounded-lg" />
             {/* Header with module tag */}
-            <div className="relative px-6 py-4 border-b border-white/10 bg-[#101725]/50 backdrop-blur-sm rounded-tl-lg">
+            <div className="relative shrink-0 px-6 py-4 border-b border-white/10 bg-[#101725]/50 backdrop-blur-sm rounded-tl-lg">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   {/* Pulsing MARBIM logo */}
@@ -907,9 +952,9 @@ export function AIAssistantPanel({ isOpen, onClose, initialPrompt, currentModule
                     <img src={marbimAILogo} alt="MARBIM AI" className="h-8" />
                   </motion.div>
                   <div>
-                    <h2 className="text-white">MARBIM — Your AI Assistant</h2>
+                    <h2 className="text-white text-base sm:text-lg">FabricXAI</h2>
                     <p className="text-xs text-[#6F83A7]">
-                      Currently in <span style={{ color: config.color }}>{config.name}</span>
+                      <span style={{ color: config.color }}>{config.name}</span>
                     </p>
                   </div>
                 </div>
@@ -1270,7 +1315,7 @@ export function AIAssistantPanel({ isOpen, onClose, initialPrompt, currentModule
             </div>
 
             {/* Input Area */}
-            <div className="relative border-t border-white/10 bg-[#101725]/50 backdrop-blur-sm p-4">
+            <div className="relative shrink-0 border-t border-white/10 bg-[#101725]/50 backdrop-blur-sm p-4">
               {/* Attached Files Preview */}
               {attachedFiles.length > 0 && (
                 <div className="mb-3 flex flex-wrap gap-2">

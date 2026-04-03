@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouteSubpage } from '../../hooks/useRouteSubpage';
 import { PageLayout } from '../PageLayout';
 import { KPICard } from '../KPICard';
 import { AICard } from '../AICard';
@@ -13,6 +14,7 @@ import { QuoteComparisonDrawer } from '../QuoteComparisonDrawer';
 import { AwardedRFQDetailDrawer } from '../AwardedRFQDetailDrawer';
 import { RequestSampleDrawer } from '../RequestSampleDrawer';
 import { AddSupplierDrawer } from '../AddSupplierDrawer';
+import { SupplierEvaluationSetup } from './SupplierEvaluationSetup';
 import { WorkflowStepper } from '../WorkflowStepper';
 import { 
   Package, Clock, CheckCircle, AlertTriangle, FileText, TrendingUp,
@@ -394,7 +396,8 @@ interface SupplierEvaluationProps {
 }
 
 export function SupplierEvaluation({ initialSubPage = 'dashboard', onAskMarbim, onOpenAI, onNavigateToPage, isAIPanelOpen }: SupplierEvaluationProps) {
-  const [currentView, setCurrentView] = useState<string>(initialSubPage);
+  const routeSubpage = useRouteSubpage('dashboard', initialSubPage);
+  const [currentView, setCurrentView] = useState<string>(routeSubpage);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [supplierDrawerOpen, setSupplierDrawerOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
@@ -408,11 +411,12 @@ export function SupplierEvaluation({ initialSubPage = 'dashboard', onAskMarbim, 
   const [selectedAwardedRFQ, setSelectedAwardedRFQ] = useState<any>(null);
   const [requestSampleDrawerOpen, setRequestSampleDrawerOpen] = useState(false);
   const [addSupplierDrawerOpen, setAddSupplierDrawerOpen] = useState(false);
+  const [setupWizardOpen, setSetupWizardOpen] = useState(false);
+  const [showSetupBanner, setShowSetupBanner] = useState(true);
 
-  // Update view when initialSubPage changes
   useEffect(() => {
-    setCurrentView(initialSubPage);
-  }, [initialSubPage]);
+    setCurrentView(routeSubpage);
+  }, [routeSubpage]);
 
   // Close all drawers when AI panel opens
   useEffect(() => {
@@ -423,6 +427,7 @@ export function SupplierEvaluation({ initialSubPage = 'dashboard', onAskMarbim, 
       setBroadcastDrawerOpen(false);
       setRequestSampleDrawerOpen(false);
       setAddSupplierDrawerOpen(false);
+      setSetupWizardOpen(false);
     }
   }, [isAIPanelOpen]);
 
@@ -576,16 +581,6 @@ export function SupplierEvaluation({ initialSubPage = 'dashboard', onAskMarbim, 
 
   const renderDashboard = () => (
     <>
-      {/* Module Setup Banner */}
-      {onNavigateToPage && (
-        <ModuleSetupBanner
-          moduleId="supplier-evaluation"
-          moduleName="Supplier Evaluation"
-          description="Complete the setup to unlock AI-powered supplier ranking, auto quote normalization, performance scorecards, and supplier portal integration. Make smarter sourcing decisions."
-          onNavigate={onNavigateToPage}
-        />
-      )}
-
       {/* Hero Section with Key Metrics */}
       <div className="relative bg-gradient-to-br from-[#57ACAF]/10 via-transparent to-[#EAB308]/10 border border-white/10 rounded-2xl p-8 mb-6 overflow-hidden">
         {/* Background Pattern */}
@@ -4050,8 +4045,27 @@ export function SupplierEvaluation({ initialSubPage = 'dashboard', onAskMarbim, 
         breadcrumbs={getBreadcrumbs()}
         aiInsightsCount={5}
       >
+        {showSetupBanner && currentView === 'dashboard' && (
+          <ModuleSetupBanner
+            moduleName="Supplier Evaluation"
+            onSetupClick={() => setSetupWizardOpen(true)}
+          />
+        )}
         {renderContent()}
       </PageLayout>
+
+      {/* Setup Wizard */}
+      {setupWizardOpen && (
+        <SupplierEvaluationSetup
+          onComplete={() => {
+            setSetupWizardOpen(false);
+            setShowSetupBanner(false);
+            toast.success('Supplier Evaluation module activated!');
+          }}
+          onClose={() => setSetupWizardOpen(false)}
+          onAskMarbim={onAskMarbim}
+        />
+      )}
 
       {/* Supplier Detail Drawer */}
       <SupplierDetailDrawer
