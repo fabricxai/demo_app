@@ -26,7 +26,8 @@ function TabsList({
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-xl p-[3px] flex",
+        // flex row so triggers stay horizontal when no grid is passed; consumer `grid …` overrides via twMerge
+        "flex flex-row flex-wrap items-stretch justify-start gap-1 rounded-xl bg-muted p-[3px] text-muted-foreground",
         className,
       )}
       {...props}

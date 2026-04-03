@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { cn } from './ui/utils';
 import { useState } from 'react';
-import { fabricxaiLogoDark } from '../config/branding';
+import { fabricxaiLogoDark, marbimLogoMark } from '../config/branding';
 
 interface SidebarProps {
   currentPage: string;
@@ -280,9 +280,9 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
         {isCollapsed ? (
           <>
             <img
-              src={fabricxaiLogoDark}
-              alt="FabricXAI"
-              className="h-5 w-auto max-w-[56px] object-contain object-center"
+              src={marbimLogoMark}
+              alt="MARBIM"
+              className="h-7 w-7 object-contain object-center"
             />
             <button
               type="button"

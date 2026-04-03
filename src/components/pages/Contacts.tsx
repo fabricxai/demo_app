@@ -480,49 +480,49 @@ export function Contacts() {
       {/* Main Content Grid */}
       <div className="space-y-6">
           {/* Filter Tabs */}
-          <Tabs defaultValue="all" value={activeView} onValueChange={setActiveView}>
-            <div className="bg-gradient-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-1.5 shadow-lg shadow-black/20">
-              <TabsList className="w-full bg-transparent border-0 p-0 h-auto grid grid-cols-6 gap-1.5">
+          <Tabs defaultValue="all" value={activeView} onValueChange={setActiveView} className="w-full">
+            <div className="w-full min-w-0 bg-gradient-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-1.5 shadow-lg shadow-black/20">
+              <TabsList className="grid w-full min-w-0 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 bg-transparent border-0 p-0 h-auto [&_[data-slot=tabs-trigger]]:flex-none [&_[data-slot=tabs-trigger]]:w-full">
                 <TabsTrigger 
                   value="all" 
-                  className="py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
+                  className="inline-flex flex-row py-3.5 px-3 sm:px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
                 >
-                  <Users className="w-4 h-4 mr-2 group-data-[state=active]:scale-110 transition-transform" />
+                  <Users className="w-4 h-4 mr-2 shrink-0 group-data-[state=active]:scale-110 transition-transform" />
                   All ({totalContacts})
                 </TabsTrigger>
                 <TabsTrigger 
                   value="customers"
-                  className="py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
+                  className="inline-flex flex-row py-3.5 px-3 sm:px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
                 >
-                  <ShoppingCart className="w-4 h-4 mr-2 group-data-[state=active]:scale-110 transition-transform" />
+                  <ShoppingCart className="w-4 h-4 mr-2 shrink-0 group-data-[state=active]:scale-110 transition-transform" />
                   Customers
                 </TabsTrigger>
                 <TabsTrigger 
                   value="suppliers"
-                  className="py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
+                  className="inline-flex flex-row py-3.5 px-3 sm:px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
                 >
-                  <Building2 className="w-4 h-4 mr-2 group-data-[state=active]:scale-110 transition-transform" />
+                  <Building2 className="w-4 h-4 mr-2 shrink-0 group-data-[state=active]:scale-110 transition-transform" />
                   Suppliers
                 </TabsTrigger>
                 <TabsTrigger 
                   value="partners"
-                  className="py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
+                  className="inline-flex flex-row py-3.5 px-3 sm:px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
                 >
-                  <Globe className="w-4 h-4 mr-2 group-data-[state=active]:scale-110 transition-transform" />
+                  <Globe className="w-4 h-4 mr-2 shrink-0 group-data-[state=active]:scale-110 transition-transform" />
                   Partners
                 </TabsTrigger>
                 <TabsTrigger 
                   value="active"
-                  className="py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
+                  className="inline-flex flex-row py-3.5 px-3 sm:px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
                 >
-                  <Activity className="w-4 h-4 mr-2 group-data-[state=active]:scale-110 transition-transform" />
+                  <Activity className="w-4 h-4 mr-2 shrink-0 group-data-[state=active]:scale-110 transition-transform" />
                   Active
                 </TabsTrigger>
                 <TabsTrigger 
                   value="vip"
-                  className="py-3.5 px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
+                  className="inline-flex flex-row py-3.5 px-3 sm:px-4 bg-white/5 hover:bg-white/10 data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#EAB308] data-[state=active]:to-[#EAB308]/80 data-[state=active]:text-black data-[state=active]:font-medium data-[state=active]:shadow-lg data-[state=active]:shadow-[#EAB308]/30 text-[#6F83A7] transition-all duration-300 rounded-xl"
                 >
-                  <Target className="w-4 h-4 mr-2 group-data-[state=active]:scale-110 transition-transform" />
+                  <Target className="w-4 h-4 mr-2 shrink-0 group-data-[state=active]:scale-110 transition-transform" />
                   VIP
                 </TabsTrigger>
               </TabsList>
