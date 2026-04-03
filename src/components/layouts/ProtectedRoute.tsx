@@ -25,8 +25,16 @@ export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
     // Check role-based access
     if (roles && roles.length > 0) {
       const userSession = getCurrentSession();
-      const userRole = userSession.role;
-      
+      const userRole = userSession?.role;
+
+      if (!userRole) {
+        toast.error('Your session is missing role information. Please sign in again.', {
+          duration: 8000,
+        });
+        navigate('/login');
+        return;
+      }
+
       // Admin has access to everything
       if (userRole === 'admin') {
         return;

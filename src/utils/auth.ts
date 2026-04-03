@@ -241,7 +241,11 @@ export function isAuthenticated(): boolean {
 /**
  * Verify session with the server
  */
-export async function verifySession(): Promise<{ valid: boolean; user?: User }> {
+export async function verifySession(): Promise<{
+  valid: boolean;
+  user?: User;
+  errorMessage?: string;
+}> {
   if (isDevAuthBypass()) {
     const s = devBypassAuthSession();
     if (!devBypassConsoleWarned) {
@@ -254,27 +258,40 @@ export async function verifySession(): Promise<{ valid: boolean; user?: User }> 
   }
   const session = getSession();
   if (!session) {
-    return { valid: false };
+    return { valid: false, errorMessage: 'No saved session. Please sign in.' };
   }
 
   try {
     const response = await fetch(`${API_URL}/auth/session`, {
       headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
+        Authorization: `Bearer ${session.accessToken}`,
+        apikey: publicAnonKey,
       },
     });
 
     if (!response.ok) {
-      // Session is invalid, clear it
+      let errorMessage = 'Session invalid or expired. Please sign in again.';
+      try {
+        const body = (await response.json()) as { error?: string };
+        if (body?.error && typeof body.error === 'string') {
+          errorMessage = body.error;
+        }
+      } catch {
+        /* non-JSON error body */
+      }
       signOut();
-      return { valid: false };
+      return { valid: false, errorMessage };
     }
 
     const result = await response.json();
     return { valid: true, user: result.user };
   } catch (error) {
     console.error('Session verification error:', error);
-    return { valid: false };
+    return {
+      valid: false,
+      errorMessage:
+        'Could not reach the server to verify your session. Check your connection and try again.',
+    };
   }
 }
 

@@ -3,7 +3,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from '../Sidebar';
 import { TopBar } from '../TopBar';
 import { AIAssistantPanel } from '../AIAssistantPanel';
-import { Toaster } from '../ui/sonner';
 import { toast } from 'sonner@2.0.3';
 import { getSession, verifySession, signOut } from '../../utils/auth';
 import { initializeDemoSession } from '../../utils/supabase/rbac';
@@ -43,6 +42,7 @@ export function MainLayout() {
     const checkSession = async () => {
       const session = getSession();
       if (!session) {
+        toast.error('Session expired. Please sign in again.', { duration: 8000 });
         navigate('/login');
         setIsVerifyingSession(false);
         return;
@@ -51,6 +51,11 @@ export function MainLayout() {
       const verification = await verifySession();
       if (!verification.valid) {
         signOut();
+        toast.error(
+          verification.errorMessage ||
+            'Could not verify your session. Please sign in again.',
+          { duration: 8000 },
+        );
         navigate('/login');
         setIsVerifyingSession(false);
         return;
@@ -235,7 +240,6 @@ export function MainLayout() {
         <MobileWorkspaceNotice onOpenFabricAI={() => setIsAIPanelOpen(true)} />
       )}
 
-      <Toaster position="bottom-right" />
     </div>
   );
 }

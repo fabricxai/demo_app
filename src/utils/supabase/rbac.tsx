@@ -92,23 +92,58 @@ export interface UserSession {
   expiresAt: Date;
 }
 
+type AuthStoredSession = {
+  user?: {
+    id?: string;
+    email?: string;
+    fullName?: string;
+    companyName?: string;
+    companyId?: string;
+    role?: string;
+  };
+  accessToken?: string;
+};
+
 /**
- * Get current user session from storage
+ * Get current user session from storage.
+ * Supports the auth shape from `auth.ts` (`user` + `accessToken`) without overwriting it.
  */
 export function getCurrentSession(): UserSession | null {
   try {
     const sessionData = localStorage.getItem('fabricxai_session');
     if (!sessionData) return null;
-    
-    const session = JSON.parse(sessionData);
-    
-    // Check if session is expired
-    if (new Date(session.expiresAt) < new Date()) {
-      clearSession();
-      return null;
+
+    const raw = JSON.parse(sessionData) as AuthStoredSession & UserSession;
+
+    const authUser = raw.user;
+    const accessToken = raw.accessToken;
+
+    if (authUser?.id && authUser.role && accessToken) {
+      const role = authUser.role as UserRole;
+      const modules = Object.entries(MODULE_PERMISSIONS)
+        .filter(([, roles]) => roles.includes(role))
+        .map(([module]) => module);
+      return {
+        userId: authUser.id,
+        companyId: authUser.companyId || '',
+        role,
+        email: authUser.email || '',
+        name: authUser.fullName || '',
+        modules,
+        permissions: ROLE_PERMISSIONS[role] ?? ROLE_PERMISSIONS.viewer,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      };
     }
-    
-    return session;
+
+    if (raw.userId && raw.expiresAt) {
+      if (new Date(raw.expiresAt) < new Date()) {
+        clearSession();
+        return null;
+      }
+      return raw as UserSession;
+    }
+
+    return null;
   } catch (error) {
     console.error('Error getting session:', error);
     return null;
@@ -308,20 +343,9 @@ export function validateRequestAuth(headers: Headers): {
 // ============================================
 
 /**
- * Initialize demo session for testing
- * In production, this would be replaced with actual auth
+ * Legacy hook after login — RBAC is derived from `fabricxai_session` in getCurrentSession().
+ * Never overwrite auth storage (user + accessToken); that caused immediate redirect to /login after sign-in.
  */
-export function initializeDemoSession(role: UserRole = 'admin'): void {
-  const demoSession: UserSession = {
-    userId: 'demo-user-001',
-    companyId: 'fabricxai-demo',
-    role,
-    email: 'demo@fabricxai.com',
-    name: 'Demo User',
-    modules: getAccessibleModules(role),
-    permissions: ROLE_PERMISSIONS[role],
-    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-  };
-  
-  setSession(demoSession);
+export function initializeDemoSession(_role?: UserRole): void {
+  // no-op
 }
